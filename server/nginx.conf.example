@@ -1,0 +1,27 @@
+# Nginx uchun namuna: /etc/nginx/sites-available/nearby.conf
+server {
+    listen 80;
+    server_name example.uz www.example.uz;       # o'z domeningizni yozing
+    root /var/www/nearby-services;
+    index index.html;
+    charset utf-8;
+
+    gzip on;
+    gzip_comp_level 6;
+    gzip_types text/css application/javascript application/json image/svg+xml application/manifest+json;
+
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(self), camera=(), microphone=()" always;
+
+    types { application/manifest+json webmanifest; }
+
+    location / { try_files $uri $uri/ =404; }
+    error_page 404 /404.html;
+
+    location /fonts/ { expires 1y; add_header Cache-Control "public, immutable"; }
+    location ~* \.(js|css)$ { expires 7d; add_header Cache-Control "public"; }
+    location = /index.html { add_header Cache-Control "no-cache"; }
+}
+# HTTPS uchun: sudo certbot --nginx -d example.uz -d www.example.uz

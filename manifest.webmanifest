@@ -1,0 +1,12 @@
+{
+  "name": "Nearby Services",
+  "short_name": "Nearby",
+  "description": "Yaqin atrofdagi xizmatlar va jamoat joylari xaritasi: Toshkent va butun O'zbekiston.",
+  "lang": "uz",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#dbe6fb",
+  "theme_color": "#1951fc",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

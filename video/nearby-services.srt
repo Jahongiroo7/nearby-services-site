@@ -1,0 +1,95 @@
+1
+00:00:00,000 --> 00:00:05,510
+Nearby Services: yaqin atrofdagi xizmatlar va joylar bitta xaritada.
+
+2
+00:00:05,530 --> 00:00:09,941
+Xaritada Toshkent markazi va atrofdagi xizmatlar belgilangan.
+
+3
+00:00:09,961 --> 00:00:11,829
+Ko'k nuqta siz turgan joy.
+
+4
+00:00:11,849 --> 00:00:13,790
+Har bir belgi bitta xizmat.
+
+5
+00:00:13,810 --> 00:00:16,790
+Toifa, masofa va reyting bo'yicha saralang.
+
+6
+00:00:16,810 --> 00:00:20,070
+Hozir ochiq joylarni alohida ko'rsatish mumkin.
+
+7
+00:00:20,090 --> 00:00:21,430
+Xizmatni tanlang:
+
+8
+00:00:21,450 --> 00:00:25,670
+rasm, reyting, ish vaqti va telefon raqami bir joyda.
+
+9
+00:00:25,690 --> 00:00:28,626
+«Yo'nalish» tugmasi yo'lni xaritada chizadi.
+
+10
+00:00:28,646 --> 00:00:31,850
+Google Maps va Yandex Maps'da ham ochish mumkin.
+
+11
+00:00:31,870 --> 00:00:36,010
+«Davlatni ko'rish» butun O'zbekiston xaritasini ochadi:
+
+12
+00:00:36,030 --> 00:00:39,640
+viloyatlar va shaharlar bo'yicha 1211 ta xizmat.
+
+13
+00:00:39,660 --> 00:00:42,249
+Telefonda xarita butun ekranni egallaydi.
+
+14
+00:00:42,269 --> 00:00:46,067
+Barmoq bilan suring, + va − tugmalari bilan kattalashtiring.
+
+15
+00:00:46,087 --> 00:00:47,530
+Ro'yxat pastki panelda.
+
+16
+00:00:47,550 --> 00:00:51,747
+Tutqichni tortsangiz, panel kichik, yarim yoki to'liq ochiladi.
+
+17
+00:00:51,768 --> 00:00:54,425
+Tutqichga bossangiz ham holat almashadi.
+
+18
+00:00:54,445 --> 00:00:57,170
+Qidiruvga bossangiz, panel o'zi ochiladi.
+
+19
+00:00:57,190 --> 00:01:02,705
+To'liq ochilganda toifalar, masofa va reyting filtrlari katta tugmalar bilan chiqadi.
+
+20
+00:01:02,725 --> 00:01:05,830
+Har birini bir bosish bilan almashtirish mumkin.
+
+21
+00:01:05,850 --> 00:01:13,445
+Tafsilotda yo'nalish va qo'ng'iroq tugmalari, telefon, manzil, taxminiy narxlar va ish vaqti ketma-ket turadi.
+
+22
+00:01:13,465 --> 00:01:14,830
+Pastga surib o'qing.
+
+23
+00:01:14,850 --> 00:01:18,096
+Xarita, filtr, tafsilot va yo'nalish:
+
+24
+00:01:18,116 --> 00:01:21,980
+hammasi bitta sahifada, telefonda ham qulay.
