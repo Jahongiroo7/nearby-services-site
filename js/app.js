@@ -2061,7 +2061,7 @@ function pUser(){
   if(PTAB==="rev") return mine.length?`<ul class="pn-list">${mine.map(({s,r,i})=>pRow(esc(s.name)+" "+starsHtml(r.stars),esc(r.text||""),pBtn("open","Ochish",`data-id="${s.id}"`)+pBtn("delmine","O'chirish",`data-id="${s.id}" data-i="${i}"`,"danger"))).join("")}</ul>`:`<p class="muted">Siz hali sharh yozmagansiz.</p>`;
   if(PTAB==="recent") return rec.length?`<ul class="pn-list">${rec.map(s=>svcRow(s)).join("")}</ul>`:`<p class="muted">Hali xizmat ko'rmagansiz.</p>`;
   return `<p class="muted">Bu yerdagi hamma ma'lumot (ism, saralanganlar, ko'rilganlar) shu brauzerda saqlanadi.</p>
-    <div>${pBtn("clearme",PARM===1?"Ishonchingiz komilmi? Yana bosing":"Mening ma'lumotlarimni tozalash","",PARM===1?"danger":"")}</div>`;
+    <div>${pBtn("clearme","Mening ma'lumotlarimni tozalash","","danger")}</div>`;
 }
 
 /* ----- admin paneli ----- */
@@ -2093,7 +2093,7 @@ function pSvcList(){
     <div class="pn-bar"><input class="input" id="pn-q" type="search" placeholder="Nomi yoki tuman bo'yicha qidirish" value="${esc(PSRCH)}" aria-label="Qidirish">
     <select class="input" id="pn-cat" aria-label="Toifa"><option value="">Barcha toifalar</option>${CAT_KEYS.map(k=>`<option value="${k}"${PCAT===k?" selected":""}>${CATS[k].label}</option>`).join("")}</select></div>
     <p class="muted">${arr.length} ta xizmat</p>
-    <ul class="pn-list">${shown.map(s=>`<li class="pn-row"><span class="pn-ico" style="background:${CATS[s.cat]?CATS[s.cat].color:"#64748b"}">${esc((s.name||"?")[0])}</span><div class="pn-rm"><b>${esc(s.name)}${s.id[0]==="a"?' <span class="pill open">yangi</span>':""}</b><small>${CATS[s.cat]?CATS[s.cat].label:""} · ${esc(regionById(s.region||"ts").short)} · ${esc(s.district||"")} · ★ ${s.count?fmtR(s.rating):"-"} (${s.count})</small></div><div class="pn-ra">${pBtn("open","Saytda ko'rish",`data-id="${s.id}"`)}${pBtn("edit","Tahrirlash",`data-id="${s.id}"`)}${pBtn("del",PARM===s.id?"Tasdiqlash":"O'chirish",`data-id="${s.id}"`,"danger")}</div></li>`).join("")}</ul>
+    <ul class="pn-list">${shown.map(s=>`<li class="pn-row"><span class="pn-ico" style="background:${CATS[s.cat]?CATS[s.cat].color:"#64748b"}">${esc((s.name||"?")[0])}</span><div class="pn-rm"><b>${esc(s.name)}${s.id[0]==="a"?' <span class="pill open">yangi</span>':""}</b><small>${CATS[s.cat]?CATS[s.cat].label:""} · ${esc(regionById(s.region||"ts").short)} · ${esc(s.district||"")} · ★ ${s.count?fmtR(s.rating):"-"} (${s.count})</small></div><div class="pn-ra">${pBtn("open","Saytda ko'rish",`data-id="${s.id}"`)}${pBtn("edit","Tahrirlash",`data-id="${s.id}"`)}${pBtn("del","O'chirish",`data-id="${s.id}"`,"danger")}</div></li>`).join("")}</ul>
     ${more?`<div class="pn-more">${pBtn("more","Yana ko'rsatish")}</div>`:""}`;
 }
 const pPriceRow=(n="",p="")=>`<div class="pn-price"><input class="input pn-pn" maxlength="60" placeholder="Xizmat nomi" value="${esc(n)}"><input class="input pn-pp" inputmode="numeric" placeholder="Narxi, so'm" value="${p?esc(p):""}"><button type="button" class="pn-del" data-pa="delprice" aria-label="Olib tashlash">×</button></div>`;
@@ -2138,7 +2138,7 @@ function pRevList(){
 function pAdminSettings(){
   return `<form class="pn-form" data-f="pass"><h4 class="pn-h4">Parolni o'zgartirish</h4><label>Yangi parol (kamida 6 belgi)<input class="input" id="pn-newpass" type="password" minlength="6" autocomplete="new-password"></label><em class="err" id="pn-err"></em><div><button class="btn btn-primary" type="submit">Saqlash</button></div></form>
     <h4 class="pn-h4">Ma'lumotlar</h4><p class="muted">Admin o'zgarishlari (qo'shilgan, tahrirlangan, o'chirilgan xizmatlar va sharhlar) shu brauzerda saqlanadi.</p>
-    <div class="pn-acts">${pBtn("export","Nusxa olish (JSON)")}${pBtn("reset",PARM==="reset"?"Ishonchingiz komilmi? Yana bosing":"Admin o'zgarishlarini bekor qilish","",PARM==="reset"?"danger":"")}${pBtn("logout","Chiqish")}</div>\n    <h4 class="pn-h4">Xavfli amal</h4><p class="muted">Barcha sozlamalar, saralanganlar, sharhlar va admin o'zgarishlari shu brauzerdan o'chiriladi.</p>\n    <div>${pBtn("factory",PARM==="factory"?"Ishonchingiz komilmi? Yana bosing":"Butun tizimni zavod holiga qaytarish","","danger")}</div>`;
+    <div class="pn-acts">${pBtn("export","Nusxa olish (JSON)")}${pBtn("reset","Admin o'zgarishlarini bekor qilish","","danger")}${pBtn("logout","Chiqish")}</div>\n    <h4 class="pn-h4">Xavfli amal</h4><p class="muted">Barcha sozlamalar, saralanganlar, sharhlar va admin o'zgarishlari shu brauzerdan o'chiriladi.</p>\n    <div>${pBtn("factory","Butun tizimni zavod holiga qaytarish","","danger")}</div>`;
 }
 /* ----- tizim sozlamalari ----- */
 function applySys(){
@@ -2180,6 +2180,15 @@ function pSysForm(){
 }
 function pPersist(){ LSX.set(K_ADD,A_ADD); LSX.set(K_EDIT,A_EDIT); LSX.set(K_DEL,A_DEL); LSX.set(K_HID,A_HID); }
 function pRefreshSite(){ try{ if(!vDetail.hidden&&state.sel&&!byId(state.sel.id)&&state.sel.kind==="service") showList(); render(); }catch(e){} }
+function pConfirm(o,onOk){
+  const prev=document.activeElement, d=document.createElement("div"); d.className="pn-cf"; d.setAttribute("role","alertdialog"); d.setAttribute("aria-modal","true");
+  d.innerHTML='<div class="pn-cfbox"><div class="pn-cfico" aria-hidden="true">!</div><h3></h3><p></p><div class="pn-cfa"><button type="button" class="btn" data-c="no">Bekor qilish</button><button type="button" class="btn pn-cfok" data-c="ok"></button></div></div>';
+  d.querySelector("h3").textContent=o.title; d.querySelector("p").textContent=o.text; d.querySelector(".pn-cfok").textContent=o.ok||"Tasdiqlash";
+  const key=e=>{ if(e.key==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); close(); } };
+  const close=()=>{ d.remove(); window.removeEventListener("keydown",key,true); if(prev&&prev.focus){ try{ prev.focus({preventScroll:true}); }catch(e){} } };
+  d.addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(b){ const ok=b.dataset.c==="ok"; close(); if(ok) onOk(); } else if(e.target===d) close(); });
+  window.addEventListener("keydown",key,true); document.body.appendChild(d); d.querySelector('[data-c="no"]').focus();
+}
 let pArmT=0; const pArm=v=>{ PARM=v; clearTimeout(pArmT); pArmT=setTimeout(()=>{ PARM=0; if(PN&&!PN.hidden) pRenderBody(); },4000); };
 
 function pClick(e){
@@ -2189,7 +2198,7 @@ function pClick(e){
   if(a==="open"){ pClose(true); try{ if(/^#(kabinet|admin)$/.test(location.hash)) history.replaceState(null,"",location.pathname+location.search); }catch(_){} const s=byId(id); if(s&&s.region&&state.region&&state.region!==s.region){ state.region=s.region; selectRegion(regionById(s.region)); render(); } openService(id); return; }
   if(a==="unfav"){ toggleFav(id); pRenderBody(); return; }
   if(a==="delmine"){ const list=myReviews[id]||[], i=+el.dataset.i, r=list[i], s=byId(id); if(r&&s){ list.splice(i,1); if(!list.length) delete myReviews[id]; LS.set(STORE_REV,myReviews); const k=s.reviews.findIndex(x=>x.ts===r.ts&&x.text===r.text); if(k>=0) s.reviews.splice(k,1); dropRating(s,r); toast("Sharh o'chirildi"); pRefreshSite(); pRenderBody(); } return; }
-  if(a==="clearme"){ if(PARM===1){ FAV.clear(); try{ localStorage.removeItem(FAV_KEY); localStorage.removeItem(K_PROF); localStorage.removeItem(K_RECENT); }catch(_){} PROF={name:""}; RECENT=[]; PARM=0; toast("Ma'lumotlar tozalandi"); renderCats(); } else pArm(1); pRenderBody(); return; }
+  if(a==="clearme"){ pConfirm({title:"Ma'lumotlarni tozalash",text:"Ismingiz, saralanganlar va ko'rilganlar ro'yxati shu brauzerdan o'chiriladi.",ok:"Ha, tozalash"},()=>{ FAV.clear(); try{ localStorage.removeItem(FAV_KEY); localStorage.removeItem(K_PROF); localStorage.removeItem(K_RECENT); }catch(_){} PROF={name:""}; RECENT=[]; toast("Ma'lumotlar tozalandi"); renderCats(); pRenderBody(); }); return; }
   if(a==="usecenter"||a==="useuser"){ const p=a==="usecenter"?{x:view.x+view.w/2,y:view.y+view.h/2}:state.user, ll=toLatLng(p.x,p.y); PN.querySelector("#f-lat").value=ll.lat.toFixed(5); PN.querySelector("#f-lng").value=ll.lng.toFixed(5); const rg=regionAt(p); if(rg&&PN.querySelector("#f-region")) PN.querySelector("#f-region").value=rg.id; if(!PN.querySelector("#f-district").value) PN.querySelector("#f-district").value=nearestDistrict(Math.round(p.x),Math.round(p.y)); toast(a==="usecenter"?"Xarita markazi olindi":"Sizning nuqtangiz olindi"); pPreview(); return; }
   if(a==="addprice"){ PN.querySelector("#f-prices").insertAdjacentHTML("beforeend",pPriceRow()); const r=PN.querySelectorAll(".pn-pn"); r[r.length-1].focus(); return; }
   if(a==="delprice"){ const row=el.closest(".pn-price"), box=row.parentElement; if(box.children.length>1) row.remove(); else row.querySelectorAll("input").forEach(i=>i.value=""); return; }
@@ -2197,12 +2206,12 @@ function pClick(e){
   if(a==="edit"){ PEDIT=id; pRenderBody(); PN.querySelector(".pn-body").scrollTop=0; return; }
   if(a==="cancel"){ PEDIT=null; pRenderBody(); return; }
   if(a==="more"){ PLIM+=40; pRenderBody(); return; }
-  if(a==="del"){ if(PARM===id){ const s=byId(id); if(s){ const ai=A_ADD.findIndex(x=>x.id===id); if(ai>=0) A_ADD.splice(ai,1); else A_DEL.push(id); delete A_EDIT[id]; services.splice(services.indexOf(s),1); FAV.delete(id); pPersist(); toast("Xizmat o'chirildi"); pRefreshSite(); } PARM=0; } else pArm(id); pRenderBody(); return; }
+  if(a==="del"){ const s0=byId(id); pConfirm({title:"Xizmatni o'chirish",text:"«"+(s0?s0.name:"")+"» xizmati o'chiriladi.",ok:"Ha, o'chirish"},()=>{ const s=byId(id); if(s){ const ai=A_ADD.findIndex(x=>x.id===id); if(ai>=0) A_ADD.splice(ai,1); else A_DEL.push(id); delete A_EDIT[id]; services.splice(services.indexOf(s),1); FAV.delete(id); pPersist(); toast("Xizmat o'chirildi"); pRefreshSite(); } pRenderBody(); }); return; }
   if(a==="hide"){ const sig=el.dataset.sig, sid=sig.split("|")[0], s=byId(sid); if(s){ const i=s.reviews.findIndex(r=>revSig(sid,r)===sig); if(i>=0){ const r=s.reviews[i]; dropRating(s,r); s.reviews.splice(i,1); A_HID.push(sig); pPersist(); toast("Sharh o'chirildi"); pRefreshSite(); } } pRenderBody(); return; }
   if(a==="sysreset"){ SYS=Object.assign({},SYS_DEF); LS.set(SYS_KEY,SYS); state.sort=SYS.sort; state.radius=SYS.radius; state.openNow=SYS.openNow; { const so=$("#sort"); if(so) so.value=state.sort; const on=$("#openNow"); if(on) on.checked=false; try{ setPressed($("#segRadius"),0); }catch(_){} } applySys(); toast("Standart sozlamalar qaytarildi"); pRenderBody(); return; }
-  if(a==="factory"){ if(PARM==="factory"){ try{ Object.keys(localStorage).filter(k=>/^(ns_|nearby-proto)/.test(k)).forEach(k=>localStorage.removeItem(k)); sessionStorage.clear(); }catch(_){} toast("Tizim zavod holiga qaytarildi. Sahifa yangilanadi"); setTimeout(()=>location.reload(),700); } else { pArm("factory"); pRenderBody(); } return; }
+  if(a==="factory"){ pConfirm({title:"Zavod holiga qaytarish",text:"Barcha sozlamalar, saralanganlar, sharhlar va admin o'zgarishlari shu brauzerdan o'chiriladi. Buni qaytarib bo'lmaydi.",ok:"Ha, qaytarish"},()=>{ try{ Object.keys(localStorage).filter(k=>/^(ns_|nearby-proto)/.test(k)).forEach(k=>localStorage.removeItem(k)); sessionStorage.clear(); }catch(_){} toast("Tizim zavod holiga qaytarildi. Sahifa yangilanadi"); setTimeout(()=>location.reload(),700); }); return; }
   if(a==="logout"){ try{ sessionStorage.removeItem("ns_admin_ok"); }catch(_){} PTAB="stats"; applySys(); pRender(); return; }
-  if(a==="reset"){ if(PARM==="reset"){ for(const k of [K_ADD,K_EDIT,K_DEL,K_HID]) try{ localStorage.removeItem(k); }catch(_){} toast("Admin o'zgarishlari bekor qilindi. Sahifa yangilanadi"); setTimeout(()=>location.reload(),700); } else { pArm("reset"); pRenderBody(); } return; }
+  if(a==="reset"){ pConfirm({title:"Admin o'zgarishlarini bekor qilish",text:"Qo'shilgan, tahrirlangan va o'chirilgan xizmatlar hamda o'chirilgan sharhlar asl holatiga qaytadi.",ok:"Ha, bekor qilish"},()=>{ for(const k of [K_ADD,K_EDIT,K_DEL,K_HID]) try{ localStorage.removeItem(k); }catch(_){} toast("Admin o'zgarishlari bekor qilindi. Sahifa yangilanadi"); setTimeout(()=>location.reload(),700); }); return; }
   if(a==="export"){ const txt=JSON.stringify({settings:SYS,added:A_ADD,edited:A_EDIT,deleted:A_DEL,hiddenReviews:A_HID}); copyText(txt); return; }
 }
 function pSubmit(e){
