@@ -650,6 +650,7 @@ function drawReal(){
     const P=areaPaths(a); any=true;
     // viloyat rejimi: ma'lumot tugaydigan chetdagi uzilgan yo'l uchlari chizilmaydi (chekinib qirqiladi)
     const inset=LOC&&!a.b;   // viloyat rejimi: ma'lumot chegarasi to'rtburchak bo'lib ko'rinmasin, mayda yo'llar oval bo'ylab asta so'nadi
+    if(inset){ ctx.save(); ctx.beginPath(); ctx.rect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); ctx.clip(); }   // chegaradan chiqib ketgan yo'l parchalari qirqiladi (so'nmay qolib, to'g'ri chiziq hosil qilmasin)
     if(!a.b&&!LOC){ ctx.fillStyle=RC.land; ctx.fillRect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); } // ostidagi sxematik chizmani yopadi (ichma-ich markaziy hudud katta hududning ustida, o'z to'rtburchagini bo'yamaydi)
     if(P.detail){ ctx.fillStyle=RC.park; ctx.fill(P.g); ctx.fillStyle=RC.pitch; ctx.fill(P.p); ctx.fillStyle=RC.water; ctx.fill(P.w); }
     ctx.strokeStyle=RC.water; ctx.lineWidth=Math.max(10,2.5*k); ctx.stroke(P.wl);
@@ -674,7 +675,7 @@ function drawReal(){
       ctx.translate(cx,cy); ctx.scale((bb[2]-bb[0])/2,(bb[3]-bb[1])/2);
       const g=ctx.createRadialGradient(0,0,0,0,0,1); g.addColorStop(0,lc(0)); g.addColorStop(.66,lc(0)); g.addColorStop(.84,lc(.5)); g.addColorStop(.95,lc(.92)); g.addColorStop(1,lc(1));
       ctx.fillStyle=g; ctx.fillRect(-1,-1,2,2); ctx.restore();
-      ctx.save(); ctx.beginPath(); ctx.rect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); ctx.clip(); drawHW(); ctx.restore(); }
+      ctx.save(); ctx.beginPath(); ctx.rect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); ctx.clip(); drawHW(); ctx.restore(); ctx.restore(); }
   }
   ctx.restore();
   if(LP){ ctx.setLineDash([]); ctx.lineJoin="round"; ctx.strokeStyle="rgba(0,0,0,.38)"; ctx.lineWidth=4.4*k; ctx.stroke(LP);
