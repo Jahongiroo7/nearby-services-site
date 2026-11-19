@@ -9,6 +9,11 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
+/* Tizim sozlamalari (admin panelida o'zgartiriladi); standart qiymatlar */
+const SYS_KEY="ns_sys";
+const SYS_DEF={name:"Nearby",sub:"Services · Toshkent",lang:"uz",theme:"auto",sort:"dist",radius:0,openNow:false,
+  fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
+let SYS=Object.assign({},SYS_DEF,LS.get(SYS_KEY,{}));
 
 /* ---------- dunyo koordinatalari (metr), 24 x 18 km ---------- */
 const W = 24000, H = 18000;
@@ -1688,7 +1693,7 @@ function measure(){ const r=svg.getBoundingClientRect(); const cx=view.x+view.w/
    Sahifadagi har bir matn (va placeholder/title/aria-label) asl o'zbekcha ko'rinishida saqlanadi va lug'at bo'yicha almashtiriladi.
    Lug'atda topilmagan matn (xizmat nomi, ko'cha nomi va h.k.) o'zgarmaydi. */
 const LANG_KEY="nearby-proto-lang";
-let lang="uz"; try{ const l=localStorage.getItem(LANG_KEY); if(["uz","en","ru","fr","de"].includes(l)) lang=l; }catch(e){}
+let lang=["uz","en","ru","fr","de"].includes(SYS.lang)?SYS.lang:"uz"; try{ const l=localStorage.getItem(LANG_KEY); if(["uz","en","ru","fr","de"].includes(l)) lang=l; }catch(e){}
 const LI={en:1,ru:2,fr:3,de:4};
 const DICT={en:new Map(),ru:new Map(),fr:new Map(),de:new Map()}, RULES=[], tcache={}, MISS=new Set();
 let EXO={};
@@ -1931,7 +1936,7 @@ window.__i18n={MISS,get lang(){return lang;},setLang,RULES,DICT};
 
 /* ---------- kunduzgi / tungi rejim ---------- */
 const THEME_KEY="nearby-proto-theme", THEMES=[["auto","Avto","theme-auto"],["light","Kunduzgi","sun"],["dark","Tungi","moon"]];
-let theme="auto"; try{ const t=localStorage.getItem(THEME_KEY); if(THEMES.some(x=>x[0]===t)) theme=t; }catch(e){}
+let theme=["auto","light","dark"].includes(SYS.theme)?SYS.theme:"auto"; try{ const t=localStorage.getItem(THEME_KEY); if(THEMES.some(x=>x[0]===t)) theme=t; }catch(e){}
 function applyTheme(){
   const r=document.documentElement; if(theme==="auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme",theme);
   const [,label,icon]=THEMES.find(x=>x[0]===theme);
@@ -2033,7 +2038,7 @@ function pClose(fromHash){
 function pRender(){
   PN.querySelector(".pn-t").textContent=PKIND==="user"?"Kabinet":"Admin panel";
   const tabs=PKIND==="user"?[["profile","Profil"],["fav","Saralanganlar"],["rev","Sharhlarim"],["recent","Ko'rilganlar"],["set","Sozlamalar"]]
-    :(pAuth()?[["stats","Statistika"],["svc","Xizmatlar"],["rev","Sharhlar"],["set","Sozlamalar"]]:[]);
+    :(pAuth()?[["stats","Statistika"],["svc","Xizmatlar"],["rev","Sharhlar"],["set","Sozlamalar"],["sec","Xavfsizlik"]]:[]);
   PN.querySelector(".pn-tabs").innerHTML=tabs.map(([k,l])=>`<button type="button" role="tab" class="pn-tab" data-pa="tab" data-k="${k}" aria-selected="${PTAB===k}">${l}</button>`).join("");
   PN.querySelector(".pn-tabs").hidden=!tabs.length;
   pRenderBody();
@@ -2064,11 +2069,12 @@ function pAdmin(){
   if(!pAuth()) return `<form class="pn-form pn-login" data-f="login"><p class="muted">Admin paneliga kirish uchun parolni kiriting.</p>
     <label>Parol<input class="input" id="pn-pass" type="password" autocomplete="current-password" required></label><em class="err" id="pn-err"></em>
     <div><button class="btn btn-primary" type="submit">Kirish</button></div>
-    <p class="muted pn-demo">Demo rejim: bu haqiqiy himoya emas, ma'lumot shu brauzerda saqlanadi. Parolni Sozlamalarda o'zgartirish mumkin.</p></form>`;
+    <p class="muted pn-demo">Demo rejim: bu haqiqiy himoya emas, ma'lumot shu brauzerda saqlanadi. Parolni Xavfsizlik bo'limida o'zgartirish mumkin.</p></form>`;
   if(PEDIT) return pSvcForm(PEDIT==="new"?null:byId(PEDIT));
   if(PTAB==="stats") return pStats();
   if(PTAB==="svc") return pSvcList();
   if(PTAB==="rev") return pRevList();
+  if(PTAB==="set") return pSysForm();
   return pAdminSettings();
 }
 function pStats(){
@@ -2132,7 +2138,45 @@ function pRevList(){
 function pAdminSettings(){
   return `<form class="pn-form" data-f="pass"><h4 class="pn-h4">Parolni o'zgartirish</h4><label>Yangi parol (kamida 6 belgi)<input class="input" id="pn-newpass" type="password" minlength="6" autocomplete="new-password"></label><em class="err" id="pn-err"></em><div><button class="btn btn-primary" type="submit">Saqlash</button></div></form>
     <h4 class="pn-h4">Ma'lumotlar</h4><p class="muted">Admin o'zgarishlari (qo'shilgan, tahrirlangan, o'chirilgan xizmatlar va sharhlar) shu brauzerda saqlanadi.</p>
-    <div class="pn-acts">${pBtn("export","Nusxa olish (JSON)")}${pBtn("reset",PARM==="reset"?"Ishonchingiz komilmi? Yana bosing":"Admin o'zgarishlarini bekor qilish","",PARM==="reset"?"danger":"")}${pBtn("logout","Chiqish")}</div>`;
+    <div class="pn-acts">${pBtn("export","Nusxa olish (JSON)")}${pBtn("reset",PARM==="reset"?"Ishonchingiz komilmi? Yana bosing":"Admin o'zgarishlarini bekor qilish","",PARM==="reset"?"danger":"")}${pBtn("logout","Chiqish")}</div>\n    <h4 class="pn-h4">Xavfli amal</h4><p class="muted">Barcha sozlamalar, saralanganlar, sharhlar va admin o'zgarishlari shu brauzerdan o'chiriladi.</p>\n    <div>${pBtn("factory",PARM==="factory"?"Ishonchingiz komilmi? Yana bosing":"Butun tizimni zavod holiga qaytarish","","danger")}</div>`;
+}
+/* ----- tizim sozlamalari ----- */
+function applySys(){
+  const R=document.documentElement.classList;
+  R.toggle("sys-no-reviews",!SYS.fReviews); R.toggle("sys-no-fav",!SYS.fFav); R.toggle("sys-no-share",!SYS.fShare); R.toggle("sys-no-gallery",!SYS.fGallery); R.toggle("sys-no-phone",!SYS.fPhone); R.toggle("sys-no-kab",!SYS.fKabinet);
+  if(!SYS.fFav&&state.fav) state.fav=false;
+  const nm=String(SYS.name||"").trim()||"Nearby", b=document.querySelector(".brand b"); if(b) b.textContent=nm;
+  const sm=document.querySelector(".brand small"); if(sm&&SYS.sub) sm.textContent=SYS.sub;
+  document.title=nm==="Nearby"?"Nearby Services":nm;
+  const admin=SYS.maint&&pAuth(), txt=admin?"Texnik ishlar rejimi yoqilgan: foydalanuvchilar sayt o'rniga xabar ko'radi (siz adminsiz).":(SYS.annOn&&String(SYS.annText||"").trim()?String(SYS.annText).trim():"");
+  let ann=document.getElementById("sysAnn");
+  if(txt){ if(!ann){ ann=document.createElement("div"); ann.id="sysAnn"; ann.setAttribute("role","status"); document.body.prepend(ann); } ann.className="sys-ann "+(admin?"warn":(SYS.annKind==="warn"?"warn":"info")); ann.textContent=txt; } else if(ann) ann.remove();
+  let m=document.getElementById("sysMaint");
+  if(SYS.maint&&!pAuth()){ if(!m){ m=document.createElement("div"); m.id="sysMaint"; m.className="sys-maint"; m.innerHTML='<div><span class="sys-mi">⚙</span><h2>Texnik ishlar</h2><p></p></div>'; document.body.appendChild(m); } m.querySelector("p").textContent=SYS.maintText||SYS_DEF.maintText; } else if(m) m.remove();
+  try{ render(); }catch(e){}
+}
+function pSysForm(){
+  const sw=(id,label,on,hint)=>`<label class="pn-sw"><span><b>${label}</b>${hint?`<small>${hint}</small>`:""}</span><input type="checkbox" id="${id}"${on?" checked":""}><i aria-hidden="true"></i></label>`;
+  const sel=(id,opts,cur)=>`<select class="input" id="${id}">${opts.map(([v,l])=>`<option value="${v}"${String(cur)===String(v)?" selected":""}>${l}</option>`).join("")}</select>`;
+  return `<form class="pn-form pn-sysform" data-f="sys"><div class="pn-hero pn-hero2"><div><b>Tizim sozlamalari</b><span>O'zgarishlar saqlangach darhol saytga qo'llanadi</span></div></div>
+    <section class="pn-sec"><h4><i>1</i> Umumiy</h4>
+      <div class="pn-2"><label>Sayt nomi<input class="input" id="sys-name" maxlength="30" value="${esc(SYS.name)}"></label><label>Qisqa izoh (nom ostida)<input class="input" id="sys-sub" maxlength="50" value="${esc(SYS.sub)}"></label></div>
+      <div class="pn-2"><label>Standart til${sel("sys-lang",[["uz","O'zbekcha"],["en","English"],["ru","Русский"],["fr","Français"],["de","Deutsch"]],SYS.lang)}</label><label>Standart mavzu${sel("sys-theme",[["auto","Avtomatik"],["light","Kunduzgi"],["dark","Tungi"]],SYS.theme)}</label></div>
+      <p class="muted pn-hint">Foydalanuvchi o'zi til yoki mavzu tanlagan bo'lsa, uning tanlovi saqlanadi. Yangi tashrif buyuruvchilar standartni ko'radi.</p></section>
+    <section class="pn-sec"><h4><i>2</i> Standart filtrlar</h4>
+      <div class="pn-2"><label>Tartiblash${sel("sys-sort",[["dist","Eng yaqini"],["rating","Reytingi yuqori"],["reviews","Ko'p sharhlangan"]],SYS.sort)}</label><label>Masofa${sel("sys-radius",[[0,"Hammasi"],[1,"1 km"],[5,"5 km"],[10,"10 km"]],SYS.radius)}</label></div>
+      ${sw("sys-open","Faqat hozir ochiq xizmatlar",SYS.openNow,"Sayt ochilganda shu filtr yoqilgan bo'ladi")}</section>
+    <section class="pn-sec"><h4><i>3</i> Imkoniyatlar</h4>
+      ${sw("sys-reviews","Sharh yozish",SYS.fReviews,"O'chirilsa, yangi sharh yozib bo'lmaydi")}${sw("sys-fav","Saralanganlar",SYS.fFav,"♥ tugmasi va filtr")}${sw("sys-share","Ulashish tugmasi",SYS.fShare)}${sw("sys-gallery","Rasmlar galereyasi",SYS.fGallery)}${sw("sys-phone","\"Namuna raqam\" izohi",SYS.fPhone,"Telefon raqami yonidagi eslatma")}${sw("sys-kab","Kabinet tugmasi",SYS.fKabinet,"Tepadagi foydalanuvchi paneli")}</section>
+    <section class="pn-sec"><h4><i>4</i> E'lon</h4>
+      ${sw("sys-ann","Saytning tepasida e'lon ko'rsatish",SYS.annOn)}
+      <label>E'lon matni<textarea class="input" id="sys-anntext" rows="2" maxlength="200" placeholder="Masalan, Bayram kunlari ish vaqti o'zgargan">${esc(SYS.annText||"")}</textarea></label>
+      <label>Turi${sel("sys-annkind",[["info","Xabar (ko'k)"],["warn","Ogohlantirish (sariq)"]],SYS.annKind)}</label></section>
+    <section class="pn-sec"><h4><i>5</i> Texnik ishlar rejimi</h4>
+      ${sw("sys-maint","Saytni vaqtincha yopish",SYS.maint,"Foydalanuvchilar faqat xabarni ko'radi. Admin kirib ishlashda davom etadi (logotipni 5 marta bosing, Ctrl+Shift+A yoki #admin)")}
+      <label>Xabar matni<textarea class="input" id="sys-mainttext" rows="2" maxlength="200">${esc(SYS.maintText||"")}</textarea></label></section>
+    <em class="err" id="pn-err"></em>
+    <div class="pn-sticky"><button class="btn pn-save" type="submit">Saqlash</button>${pBtn("sysreset","Standart holatga qaytarish")}</div></form>`;
 }
 function pPersist(){ LSX.set(K_ADD,A_ADD); LSX.set(K_EDIT,A_EDIT); LSX.set(K_DEL,A_DEL); LSX.set(K_HID,A_HID); }
 function pRefreshSite(){ try{ if(!vDetail.hidden&&state.sel&&!byId(state.sel.id)&&state.sel.kind==="service") showList(); render(); }catch(e){} }
@@ -2155,16 +2199,27 @@ function pClick(e){
   if(a==="more"){ PLIM+=40; pRenderBody(); return; }
   if(a==="del"){ if(PARM===id){ const s=byId(id); if(s){ const ai=A_ADD.findIndex(x=>x.id===id); if(ai>=0) A_ADD.splice(ai,1); else A_DEL.push(id); delete A_EDIT[id]; services.splice(services.indexOf(s),1); FAV.delete(id); pPersist(); toast("Xizmat o'chirildi"); pRefreshSite(); } PARM=0; } else pArm(id); pRenderBody(); return; }
   if(a==="hide"){ const sig=el.dataset.sig, sid=sig.split("|")[0], s=byId(sid); if(s){ const i=s.reviews.findIndex(r=>revSig(sid,r)===sig); if(i>=0){ const r=s.reviews[i]; dropRating(s,r); s.reviews.splice(i,1); A_HID.push(sig); pPersist(); toast("Sharh o'chirildi"); pRefreshSite(); } } pRenderBody(); return; }
-  if(a==="logout"){ try{ sessionStorage.removeItem("ns_admin_ok"); }catch(_){} PTAB="stats"; pRender(); return; }
+  if(a==="sysreset"){ SYS=Object.assign({},SYS_DEF); LS.set(SYS_KEY,SYS); state.sort=SYS.sort; state.radius=SYS.radius; state.openNow=SYS.openNow; { const so=$("#sort"); if(so) so.value=state.sort; const on=$("#openNow"); if(on) on.checked=false; try{ setPressed($("#segRadius"),0); }catch(_){} } applySys(); toast("Standart sozlamalar qaytarildi"); pRenderBody(); return; }
+  if(a==="factory"){ if(PARM==="factory"){ try{ Object.keys(localStorage).filter(k=>/^(ns_|nearby-proto)/.test(k)).forEach(k=>localStorage.removeItem(k)); sessionStorage.clear(); }catch(_){} toast("Tizim zavod holiga qaytarildi. Sahifa yangilanadi"); setTimeout(()=>location.reload(),700); } else { pArm("factory"); pRenderBody(); } return; }
+  if(a==="logout"){ try{ sessionStorage.removeItem("ns_admin_ok"); }catch(_){} PTAB="stats"; applySys(); pRender(); return; }
   if(a==="reset"){ if(PARM==="reset"){ for(const k of [K_ADD,K_EDIT,K_DEL,K_HID]) try{ localStorage.removeItem(k); }catch(_){} toast("Admin o'zgarishlari bekor qilindi. Sahifa yangilanadi"); setTimeout(()=>location.reload(),700); } else { pArm("reset"); pRenderBody(); } return; }
-  if(a==="export"){ const txt=JSON.stringify({added:A_ADD,edited:A_EDIT,deleted:A_DEL,hiddenReviews:A_HID}); copyText(txt); return; }
+  if(a==="export"){ const txt=JSON.stringify({settings:SYS,added:A_ADD,edited:A_EDIT,deleted:A_DEL,hiddenReviews:A_HID}); copyText(txt); return; }
 }
 function pSubmit(e){
   const f=e.target.closest("form[data-f]"); if(!f) return; e.preventDefault(); const kind=f.dataset.f, err=PN.querySelector("#pn-err");
   const fail=m=>{ if(err) err.textContent=m; };
   if(kind==="profile"){ PROF.name=PN.querySelector("#pn-name").value.trim().slice(0,40); LSX.set(K_PROF,PROF); toast("Saqlandi"); return; }
-  if(kind==="login"){ if(PN.querySelector("#pn-pass").value===pPass()){ try{ sessionStorage.setItem("ns_admin_ok","1"); }catch(_){} PTAB="stats"; pRender(); } else fail("Parol noto'g'ri"); return; }
+  if(kind==="login"){ if(PN.querySelector("#pn-pass").value===pPass()){ try{ sessionStorage.setItem("ns_admin_ok","1"); }catch(_){} PTAB="stats"; applySys(); pRender(); } else fail("Parol noto'g'ri"); return; }
   if(kind==="pass"){ const v=PN.querySelector("#pn-newpass").value; if(v.length<6){ fail("Kamida 6 belgi kiriting"); return; } LSX.set(K_PASS,v); toast("Parol o'zgartirildi"); PN.querySelector("#pn-newpass").value=""; return; }
+  if(kind==="sys"){
+    const g=id=>PN.querySelector("#"+id), name=g("sys-name").value.trim();
+    if(name.length<2) return fail("Sayt nomi kamida 2 belgi bo'lsin");
+    SYS=Object.assign({},SYS_DEF,{name,sub:g("sys-sub").value.trim(),lang:g("sys-lang").value,theme:g("sys-theme").value,sort:g("sys-sort").value,radius:+g("sys-radius").value,openNow:g("sys-open").checked,
+      fReviews:g("sys-reviews").checked,fFav:g("sys-fav").checked,fShare:g("sys-share").checked,fGallery:g("sys-gallery").checked,fPhone:g("sys-phone").checked,fKabinet:g("sys-kab").checked,
+      annOn:g("sys-ann").checked,annText:g("sys-anntext").value.trim(),annKind:g("sys-annkind").value,maint:g("sys-maint").checked,maintText:g("sys-mainttext").value.trim()||SYS_DEF.maintText});
+    if(SYS.annOn&&!SYS.annText) return fail("E'lon yoqilgan, lekin matni bo'sh");
+    LS.set(SYS_KEY,SYS); applySys(); toast("Sozlamalar saqlandi"); pRenderBody(); return;
+  }
   if(kind==="svc"){
     const g=id=>PN.querySelector("#"+id), name=g("f-name").value.trim(), lat=parseFloat(g("f-lat").value.replace(",",".")), lng=parseFloat(g("f-lng").value.replace(",","."));
     if(name.length<2) return fail("Nomi kamida 2 belgi bo'lsin");
@@ -2183,13 +2238,21 @@ function pHeaderButtons(){
   const mk=(k,label,path)=>{ const b=document.createElement("button"); b.type="button"; b.className="btn pn-btn"; b.dataset.pn=k; b.setAttribute("aria-label",label);
     b.innerHTML='<svg class="i" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg><span class="pn-l">'+label+'</span>'; return b; };
   tb.insertAdjacentElement("beforebegin",mk("user","Kabinet",'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>'));
-  tb.insertAdjacentElement("beforebegin",mk("admin","Admin",'<path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6z"/>'));
 }
 document.addEventListener("click",e=>{ const b=e.target.closest("[data-pn]"); if(b) pOpen(b.dataset.pn); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&PN&&!PN.hidden){ e.preventDefault(); e.stopImmediatePropagation(); pClose(); } },true);
 function pRoute(){ const h=location.hash; if(h==="#kabinet") pOpen("user",true); else if(h==="#admin") pOpen("admin",true); else if(PN&&!PN.hidden) pClose(true); }
 addEventListener("popstate",pRoute); addEventListener("hashchange",pRoute);
 pHeaderButtons();
+/* Admin paneliga yashirin kirish: logotipni 3 soniyada 5 marta bosing, Ctrl/Cmd+Shift+A yoki #admin havolasi */
+{ let clicks=[];
+  document.addEventListener("click",e=>{ if(!e.target.closest(".brand .mk")) return; const t=Date.now(); clicks=clicks.filter(x=>t-x<3000); clicks.push(t); if(clicks.length>=5){ clicks=[]; pOpen("admin"); } });
+  document.addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==="A"||e.key==="a")){ e.preventDefault(); pOpen("admin"); } });
+}
+/* Tizim sozlamalari standart qiymatlari */
+state.sort=["dist","rating","reviews"].includes(SYS.sort)?SYS.sort:"dist"; state.radius=[0,1,5,10].includes(+SYS.radius)?+SYS.radius:0; state.openNow=!!SYS.openNow;
+{ const so=$("#sort"); if(so) so.value=state.sort; const on=$("#openNow"); if(on) on.checked=state.openNow; try{ setPressed($("#segRadius"),state.radius); }catch(e){} }
+applySys();
 applyTheme();
 drawBase(); drawCountry(); renderLayers(); renderOrigin();
 const r0=svg.getBoundingClientRect(); pxW=Math.max(1,r0.width); pxH=Math.max(1,r0.height); sizeReal(); readColors();
