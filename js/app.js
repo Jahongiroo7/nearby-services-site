@@ -2003,7 +2003,7 @@ adminApply();
 
 let PN=null, PKIND="", PTAB="", PEDIT=null, PLIM=40, PSRCH="", PCAT="", PONLY=false, PARM=0;
 const pAuth=()=>{ try{ return sessionStorage.getItem("ns_admin_ok")==="1"; }catch(e){ return false; } };
-const pPass=()=>LSX.get(K_PASS,"admin123");
+const pPass=()=>LSX.get(K_PASS,"Starboy007bnm");
 const regionList=()=>{ const seen=new Set(), out=[]; for(const r of [TASH_CITY,...REGIONS]){ if(!seen.has(r.id)){ seen.add(r.id); out.push(r); } } return out; };
 const pStat=(n,l)=>`<div class="pn-stat"><b>${n}</b><span>${l}</span></div>`;
 const pRow=(main,sub,acts)=>`<li class="pn-row"><div class="pn-rm"><b>${main}</b><small>${sub}</small></div><div class="pn-ra">${acts}</div></li>`;
@@ -2064,7 +2064,7 @@ function pAdmin(){
   if(!pAuth()) return `<form class="pn-form pn-login" data-f="login"><p class="muted">Admin paneliga kirish uchun parolni kiriting.</p>
     <label>Parol<input class="input" id="pn-pass" type="password" autocomplete="current-password" required></label><em class="err" id="pn-err"></em>
     <div><button class="btn btn-primary" type="submit">Kirish</button></div>
-    <p class="muted pn-demo">Demo rejim: bu haqiqiy himoya emas, ma'lumot shu brauzerda saqlanadi. Boshlang'ich parol: <b>admin123</b> (Sozlamalarda o'zgartiring).</p></form>`;
+    <p class="muted pn-demo">Demo rejim: bu haqiqiy himoya emas, ma'lumot shu brauzerda saqlanadi. Parolni Sozlamalarda o'zgartirish mumkin.</p></form>`;
   if(PEDIT) return pSvcForm(PEDIT==="new"?null:byId(PEDIT));
   if(PTAB==="stats") return pStats();
   if(PTAB==="svc") return pSvcList();
