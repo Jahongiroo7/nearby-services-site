@@ -843,3 +843,11 @@ html.sys-no-kab [data-pn="user"]{display:none!important}
 
 .search{min-width:150px}
 @media (max-width:860px){.search{min-width:0}}
+
+/* ===== "Tez orada yopiladi" belgisi va ogohlantirish ===== */
+.pill.soon{background:rgba(217,119,6,.16);color:#b45309;font-weight:800}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.soon{color:#fbbf24}}
+:root[data-theme="dark"] .pill.soon{color:#fbbf24}
+.info dd.cwarn{color:#b45309;font-weight:600}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .info dd.cwarn{color:#fbbf24}}
+:root[data-theme="dark"] .info dd.cwarn{color:#fbbf24}

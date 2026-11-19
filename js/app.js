@@ -386,7 +386,7 @@ function status(s){
   if(s.h24) return {open:true,text:"24/7 ochiq"};
   const now=new Date(), d=(now.getDay()+6)%7, m=now.getHours()*60+now.getMinutes();
   const o=toMin(s.open), c=toMin(s.close);
-  if(s.days.includes(d) && m>=o && m<c) return {open:true,text:`Ochiq · ${s.close} gacha`};
+  if(s.days.includes(d) && m>=o && m<c){ const left=c-m; return left<=30?{open:true,soon:true,left,text:`Tez yopiladi · ${left} daqiqa`}:{open:true,left,text:`Ochiq · ${s.close} gacha`}; }
   for(let i=0;i<8;i++){
     const dd=(d+i)%7;
     if(!s.days.includes(dd)) continue;
@@ -394,6 +394,13 @@ function status(s){
     return {open:false,text: i===1 ? `Yopiq · ertaga ${s.open} da` : `Yopiq · ${DAYS_FULL[dd]} ${s.open} da`};
   }
   return {open:false,text:"Yopiq"};
+}
+function closeWarn(s,st,tr){
+  if(!st.open||s.h24||st.left==null) return "";
+  const l=st.left;
+  if(tr.car>l) return `<div><dt>⚠ Eslatma</dt><dd class="cwarn">Yopilishigacha ${l} daqiqa qoldi, mashinada ~${tr.car} daqiqa yo'l. Yetib borguncha yopilishi mumkin.</dd></div>`;
+  if(tr.walk>l) return `<div><dt>⚠ Eslatma</dt><dd class="cwarn">Yopilishigacha ${l} daqiqa qoldi. Piyoda (~${tr.walk} daqiqa) ulgurmaysiz, mashinada ulgurasiz (~${tr.car} daqiqa).</dd></div>`;
+  return "";
 }
 function starsHtml(n){const r=Math.round(n);return `<span class="stars" aria-label="${fmtR(n)} yulduz">${"★".repeat(r)}<span class="off">${"★".repeat(5-r)}</span></span>`;}
 function ratingHtml(s){return s.count ? `<span class="rt"><span class="star">★</span>${fmtR(s.rating)} <span class="muted">(${s.count})</span></span>` : `<span class="pill new">Yangi</span>`;}
@@ -1215,7 +1222,7 @@ function cardHtml(s,d){
   const c=CATS[s.cat],st=status(s);
   return `<li><button class="card" data-open="${s.id}"><span class="cicon logo">${serviceLogo(s)}</span>
     <span class="cbody"><span class="cname">${esc(s.name)}</span><span class="cmeta">${c.label} · ${esc(s.district)}</span>
-    <span class="cline">${ratingHtml(s)}<span class="pill ${st.open?"open":"closed"}">${st.text}</span></span></span>
+    <span class="cline">${ratingHtml(s)}<span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${st.text}</span></span></span>
     <span class="dist">${fmtKm(d)}</span></button></li>`;
 }
 function placeCardHtml(p,d){
@@ -1394,7 +1401,7 @@ function openService(id,opts={}){
     <button class="back" data-act="back">${ic("back")} Ro'yxatga qaytish</button>
     <div class="dhead"><span class="dicon logo">${serviceLogo(s)}</span>
       <div class="dtitle"><span class="eyebrow">${c.label}</span><h2>${esc(s.name)}</h2>
-      <div class="cline">${ratingHtml(s)}<span class="pill ${st.open?"open":"closed"}">${st.text}</span></div></div></div>
+      <div class="cline">${ratingHtml(s)}<span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${st.text}</span></div></div></div>
     ${galleryHtml(s.cat,c.color,s.id)}
     <div class="actions">
       ${mapLinks(s)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button>
@@ -1407,7 +1414,7 @@ function openService(id,opts={}){
       ${s.desc?`<p class="desc dsec-desc">${esc(s.desc)}</p>`:""}
       ${s.prices&&s.prices.length?`<ul class="prices pr-in">${s.prices.map(([n,p])=>`<li><span>${esc(n)}</span><b>${fmtSum(p)}</b></li>`).join("")}</ul>`:`<p class="muted pr-in" style="margin:0">Narxlar hali kiritilmagan.</p>`}
     </section>
-    ${dsec("clock","Ish vaqti",`<div><dt>${ic("clock")} Jadval</dt><dd>${hoursText(s)}</dd></div><div><dt>${ic("star")} Holati</dt><dd><span class="pill ${st.open?"open":"closed"}">${st.text}</span></dd></div>`)}
+    ${dsec("clock","Ish vaqti",`<div><dt>${ic("clock")} Jadval</dt><dd>${hoursText(s)}</dd></div><div><dt>${ic("star")} Holati</dt><dd><span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${st.text}</span></dd></div>${closeWarn(s,st,tr)}`)}
     ${dsec("route","Masofa va yo'l",`<div><dt>${ic("route")} Sizdan</dt><dd>${routeHtml(s)}</dd></div>`)}
     <section class="sec" id="revSec"><h3>Sharhlar <span class="muted">${total}</span></h3>
       ${s.count?`<div class="rsum"><div class="rbig"><b>${fmtR(s.rating)}</b>${starsHtml(s.rating)}<small>${s.count} ta baho</small></div><div class="bars">${bars}</div></div>`:`<p class="muted" style="margin:0">Hali sharh yo'q. Birinchi bo'lib baho bering.</p>`}
