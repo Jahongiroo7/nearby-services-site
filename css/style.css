@@ -701,3 +701,7 @@ html.lb-open,html.lb-open body{overflow:hidden}
 .lb-next{right:max(12px,env(safe-area-inset-right,0px))}
 .lb-cnt{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom,0px));text-align:center;color:#dbe6fb;font:600 13px system-ui,sans-serif;pointer-events:none}
 @media (max-width:640px){.lb-n{width:40px;height:40px;font-size:28px}}
+
+/* ===== Saralanganlar va ulashish ===== */
+.btn[aria-pressed="true"] .fh{color:#e11d48}
+.chip[data-fav] .dot{background:#e11d48}

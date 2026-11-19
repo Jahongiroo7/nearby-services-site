@@ -290,7 +290,7 @@ function updGalArrows(g){
 document.addEventListener("scroll",e=>{ if(e.target.classList&&e.target.classList.contains("gallery")) updGalArrows(e.target); },true);
 /* Haqiqiy fotolar: Wikimedia Commons (erkin litsenziyalar), har tur uchun 4 ta; muallif va litsenziya rasmning ustida ko'rsatiladi */
 let PHOTOS=null;
-const photosOf=k=>{ if(PHOTOS===null){ try{ PHOTOS=((window.NS_DATA&&window.NS_DATA.photos)||{}); }catch(e){ PHOTOS={}; } } return PHOTOS[k]; };
+const photosOf=k=>{ if(PHOTOS===null){ const P=window.NS_DATA&&window.NS_DATA.photos; if(!P) return undefined; PHOTOS=P; } return PHOTOS[k]; };   // rasmlar kech yuklanadi: yuklanguncha sxematik rasm ko'rsatiladi
 function photoGallery(key,seedStr){
   const ph=photosOf(key); if(!ph||ph.length<3) return null;
   const off=(parseInt(String(seedStr).replace(/\D/g,""),10)||1)%ph.length, alt=(CATS[key]&&CATS[key].label)||(PTYPES[key]&&PTYPES[key].one)||"";
@@ -1168,6 +1168,7 @@ function filtered(ignoreCat){
     (!state.minRating||(s.count>0&&s.rating>=state.minRating)) &&
     (!state.openNow||status(s).open) &&
     (!q||matches(s,q)) &&
+    (!state.fav||FAV.has(s.id)) &&
     (!state.region||(s.region||"ts")===state.region));
   if(!ignoreCat){
     const by={dist:(a,b)=>a.d-b.d,rating:(a,b)=>(b.s.rating-a.s.rating)||(b.s.count-a.s.count),reviews:(a,b)=>b.s.count-a.s.count}[state.sort];
@@ -1222,7 +1223,8 @@ function renderCats(){
   const base=filtered(true), cnt={all:base.length};
   CAT_KEYS.forEach(k=>cnt[k]=base.filter(r=>r.s.cat===k).length);
   $("#cats").innerHTML=[["all","Barchasi",null],...CAT_KEYS.map(k=>[k,CATS[k].label,CATS[k].color])].map(([k,l,c])=>
-    `<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${c?`<span class="dot" style="background:${c}"></span>`:""}${l} <span class="n">${cnt[k]}</span></button>`).join("");
+    `<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${c?`<span class="dot" style="background:${c}"></span>`:""}${l} <span class="n">${cnt[k]}</span></button>`).join("")+
+    `<button class="chip" data-fav="1" aria-pressed="${!!state.fav}"><span class="dot"></span>\u2665 Saralanganlar <span class="n">${base.filter(r=>FAV.has(r.s.id)).length}</span></button>`;
 }
 function userRegion(){ return regionAt(state.user); }
 function syncScope(){
@@ -1392,6 +1394,7 @@ function openService(id,opts={}){
     <div class="actions">
       ${mapLinks(s)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button>
       <a class="btn btn-accent" href="${telHref(s.phone)}">${ic("phone")} Qo'ng'iroq qilish</a>
+      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button>
       <button class="btn" data-act="to-review">${ic("star")} Sharh yozish</button>
     </div>
     ${dsec("phone","Aloqa",phoneRow(s.phone)+`<div><dt>${ic("pin")} Manzil</dt><dd>${esc(s.address)}, ${esc(locality(s))}</dd></div>`)}
@@ -1427,7 +1430,7 @@ function openPlace(id,opts={}){
       <div class="dtitle"><span class="eyebrow">${t.one}</span><h2>${esc(p.name)}</h2></div></div>
     <p class="desc">${esc(p.desc)}</p>
     ${galleryHtml(p.t,t.color,p.id)}
-    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button></div>
+    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button></div>
     ${dsec("building","Umumiy ma'lumot",`<div><dt>${ic("building")} Hudud</dt><dd>${esc(p.area||`${p.district} tumani, Toshkent`)}</dd></div><div><dt>${ic("clock")} Ish vaqti</dt><dd>${t.hours} <span class="muted small">(taxminiy)</span></dd></div>`)}
     ${dsec("route","Masofa va yo'l",`<div><dt>${ic("route")} Sizdan</dt><dd>${routeHtml(p)}</dd></div>`)}
     ${dsec("map","Joylashuv",coordRow(p))}
@@ -1613,6 +1616,7 @@ document.addEventListener("click",e=>{
   if(cityBtn){ openCity(cityBtn.dataset.city); return; }
   const open=e.target.closest("[data-open]");
   if(open){ const id=open.dataset.open; id.startsWith("p")?openPlace(id):openService(id); return; }
+  const fv=e.target.closest("[data-fav]"); if(fv){ state.fav=!state.fav; render(); return; }
   const cat=e.target.closest("[data-cat]");
   if(cat){ state.cat=cat.dataset.cat; render(); return; }
   const layer=e.target.closest("[data-layer]");
@@ -1637,6 +1641,8 @@ document.addEventListener("click",e=>{
   else if(a==="locate") flyTo(state.user.x,state.user.y,Math.min(view.w,7000),view.w>40000?800:420);
   else if(a==="country") fitPoints(UZB,1.08);
   else if(a==="to-tashkent"){ showList(); flyTo(state.user.x,state.user.y,14000,800); }
+  else if(a==="share") shareThis();
+  else if(a==="fav") toggleFav(act.dataset.id);
   else if(a==="copy") copyText(act.dataset.copy);
   else if(a==="route"){ const t=selectedPoint(); if(t) fitPoints([state.user,t],1.5); }
   else if(a==="to-review"){ const f=$("#revForm"); if(f){f.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>$("#rs5").focus({preventScroll:true}),350);} }
@@ -1649,7 +1655,7 @@ document.addEventListener("click",e=>{
   else if(a==="pick-region"){ state.pickOpen=false; setRegion(regionById(act.dataset.id)); }
   else if(a==="scope-country"){ if(!swNoClick) scopeCountry(); }
   else if(a==="more-list"){ loadMore(); }
-  else if(a==="reset"){ state.region=null;selectRegion(null);state.cat="all";state.radius=0;state.minRating=0;state.openNow=false;state.q="";$("#q").value="";$("#openNow").checked=false;setPressed($("#segRadius"),0);setPressed($("#segRating"),0);render(); }
+  else if(a==="reset"){ state.region=null;selectRegion(null);state.cat="all";state.radius=0;state.minRating=0;state.openNow=false;state.fav=false;state.q="";$("#q").value="";$("#openNow").checked=false;setPressed($("#segRadius"),0);setPressed($("#segRating"),0);render(); }
 });
 document.addEventListener("mouseover",e=>{
   const c=e.target.closest(".card[data-open]");
@@ -1937,6 +1943,48 @@ $("#themeBtn").addEventListener("click",()=>{
   try{ localStorage.setItem(THEME_KEY,theme); }catch(e){}
   applyTheme();
 });
+/* ===== Saralanganlar, ulashish, havola orqali ochish va "orqaga" tugmasi ===== */
+const FAV_KEY="ns_fav"; let FAV=new Set(); try{ FAV=new Set(JSON.parse(localStorage.getItem(FAV_KEY)||"[]")); }catch(e){}
+function toggleFav(id){
+  if(FAV.has(id)){ FAV.delete(id); toast("Saralanganlardan olib tashlandi"); } else { FAV.add(id); toast("Saralanganlarga qo'shildi"); }
+  try{ localStorage.setItem(FAV_KEY,JSON.stringify([...FAV])); }catch(e){}
+  document.querySelectorAll('[data-act="fav"]').forEach(b=>{ const on=FAV.has(b.dataset.id); b.setAttribute("aria-pressed",String(on)); const t=b.querySelector(".ft"), h=b.querySelector(".fh"); if(t) t.textContent=on?"Saralangan":"Saralash"; if(h) h.textContent=on?"\u2665":"\u2661"; });
+  if(state.fav&&vDetail.hidden) render(); else renderCats();
+}
+function hashNow(){ const s=state.sel; if(s&&(s.kind==="service"||s.kind==="place")&&s.id&&!vDetail.hidden) return "#s-"+s.id; if(state.region&&state.region!==userRegion().id) return "#r-"+state.region; return ""; }
+let navPushed=false;
+function syncHash(){
+  try{
+    const h=hashNow(), cur=location.hash||""; if(cur===h) return;
+    const url=location.pathname+location.search+h;
+    if(h.startsWith("#s-")&&!cur.startsWith("#s-")){ history.pushState(null,"",url); navPushed=true; } else history.replaceState(null,"",url);
+  }catch(e){}
+}
+function shareThis(){
+  const s=state.sel, o=s?(byId(s.id)||places.find(p=>p.id===s.id)):null, name=o?o.name:"Nearby Services";
+  const url=location.href.split("#")[0]+hashNow();
+  if(navigator.share){ navigator.share({title:name,text:name+" — Nearby Services",url}).catch(()=>{}); } else copyText(url);
+}
+function routeFromHash(){
+  const h=location.hash||""; let m;
+  if((m=h.match(/^#s-([A-Za-z0-9_]+)$/))){
+    const id=m[1]; if(state.sel&&state.sel.id===id&&!vDetail.hidden) return;
+    const s=byId(id), p=s?null:places.find(x=>x.id===id);
+    const o=s||p; if(!o) return;
+    if(o.region&&state.region&&state.region!==o.region){ state.region=o.region; selectRegion(regionById(o.region)); render(); }
+    if(s) openService(id); else openPlace(id);
+  } else if((m=h.match(/^#r-([a-z]+)$/))){
+    const r=regionById(m[1]); if(r&&state.region!==r.id) setRegion(r); else if(!vDetail.hidden) showList();
+  } else if(!vDetail.hidden) showList();
+}
+{ const _os=openService, _op=openPlace, _sl=showList, _sr=setRegion;
+  openService=function(id,o){ _os(id,o); syncHash(); };
+  openPlace=function(id,o){ _op(id,o); syncHash(); };
+  showList=function(){ _sl(); if(navPushed&&(location.hash||"").startsWith("#s-")){ navPushed=false; try{ history.back(); }catch(e){} } else syncHash(); };
+  setRegion=function(r){ _sr(r); syncHash(); };
+}
+addEventListener("popstate",routeFromHash); addEventListener("hashchange",routeFromHash);
+addEventListener("ns-photos",()=>{ PHOTOS=null; if(state.sel&&!vDetail.hidden){ const sc=panel.scrollTop; if(state.sel.kind==="service") openService(state.sel.id); else if(state.sel.kind==="place") openPlace(state.sel.id); panel.scrollTop=sc; } });
 applyTheme();
 drawBase(); drawCountry(); renderLayers(); renderOrigin();
 const r0=svg.getBoundingClientRect(); pxW=Math.max(1,r0.width); pxH=Math.max(1,r0.height); sizeReal(); readColors();
@@ -1947,6 +1995,7 @@ setCenter(state.user.x,state.user.y,clamp(pxW*5.5,3200,6500));
 render();
 if("ResizeObserver" in window) new ResizeObserver(measure).observe(svg); else addEventListener("resize",measure);
 initI18n();
+routeFromHash();
 setTimeout(()=>idle(()=>{ try{
   startHw();   // shaharlararo yo'l grafi
   // foydalanuvchi turgan hududning ko'cha grafi (birinchi marshrut qotmasin)
