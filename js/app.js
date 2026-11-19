@@ -638,17 +638,19 @@ function drawReal(){
   ctx.save(); if(LP) ctx.clip(LP,"evenodd");   // viloyat rejimi: chegaradan tashqarida hech narsa chizilmaydi
   const RC0=RC; RC=Object.assign({},RC,RCG); if(!LOC) RC.land=RC0.land; else { ctx.fillStyle=RC.land; ctx.fillRect(vx0,vy0,view.w,view.h); }   // barcha chiziqlar (yo'l, temir yo'l) kulrang; chegaralar oq
   const hwW=k>150?1:k>40?1.4:2;
+  const drawHW=()=>{
   if(k<40){ ctx.strokeStyle=RC.edge; ctx.lineWidth=(hwW+1.4)*k; ctx.stroke(HW.sec); ctx.stroke(HW.major); }
   // uzoqdan ko'rinish uchun ochiq rang (to'q fonda ham, yorug' fonda ham farqlanadi)
   ctx.strokeStyle=k>40?RC.far:RC.major; ctx.lineWidth=(k>40?2:hwW*.9)*k; ctx.stroke(HW.sec); ctx.lineWidth=(k>40?3:hwW*1.3)*k; ctx.stroke(HW.major);
+  }; drawHW();
   ctx.globalAlpha=1;
   let any=REAL.hw.length>0;
   if(k<(LOC?90:40)) for(const a of REAL_AREAS){
     const bb=a.bbox; if(bb[2]<vx0||bb[0]>vx1||bb[3]<vy0||bb[1]>vy1) continue;
     const P=areaPaths(a); any=true;
     // viloyat rejimi: ma'lumot tugaydigan chetdagi uzilgan yo'l uchlari chizilmaydi (chekinib qirqiladi)
-    const inset=LOC&&!a.b; if(inset){ const Fi=Math.min(Math.max(50*k,250),1500); ctx.save(); ctx.beginPath(); ctx.rect(bb[0]+Fi,bb[1]+Fi,bb[2]-bb[0]-2*Fi,bb[3]-bb[1]-2*Fi); ctx.clip(); }
-    if(!a.b){ ctx.fillStyle=RC.land; ctx.fillRect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); } // ostidagi sxematik chizmani yopadi (ichma-ich markaziy hudud katta hududning ustida, o'z to'rtburchagini bo'yamaydi)
+    const inset=LOC&&!a.b;   // viloyat rejimi: ma'lumot chegarasi to'rtburchak bo'lib ko'rinmasin, mayda yo'llar oval bo'ylab asta so'nadi
+    if(!a.b&&!LOC){ ctx.fillStyle=RC.land; ctx.fillRect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); } // ostidagi sxematik chizmani yopadi (ichma-ich markaziy hudud katta hududning ustida, o'z to'rtburchagini bo'yamaydi)
     if(P.detail){ ctx.fillStyle=RC.park; ctx.fill(P.g); ctx.fillStyle=RC.pitch; ctx.fill(P.p); ctx.fillStyle=RC.water; ctx.fill(P.w); }
     ctx.strokeStyle=RC.water; ctx.lineWidth=Math.max(10,2.5*k); ctx.stroke(P.wl);
     if(P.detail&&k<11){ if(P.needGen&&!P.gen){ if(!fresh||performance.now()<dl){ P.gen=makeBuildingGen(a)||(()=>[]); fresh=true; } else pend=true; }
@@ -667,7 +669,12 @@ function drawReal(){
         if(bb[1]+i*d<vy1&&bb[1]+(i+1)*d>vy0){ ctx.fillRect(bb[0],bb[1]+i*d,W,d+1); }
         if(bb[3]-(i+1)*d<vy1&&bb[3]-i*d>vy0){ ctx.fillRect(bb[0],bb[3]-(i+1)*d-1,W,d+1); } }
       ctx.globalAlpha=1; }
-    if(inset) ctx.restore();
+    if(inset){ const lc=rgbaOf(RC.land), cx=(bb[0]+bb[2])/2, cy=(bb[1]+bb[3])/2;
+      ctx.save(); ctx.beginPath(); ctx.rect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); ctx.clip();
+      ctx.translate(cx,cy); ctx.scale((bb[2]-bb[0])/2,(bb[3]-bb[1])/2);
+      const g=ctx.createRadialGradient(0,0,0,0,0,1); g.addColorStop(0,lc(0)); g.addColorStop(.66,lc(0)); g.addColorStop(.84,lc(.5)); g.addColorStop(.95,lc(.92)); g.addColorStop(1,lc(1));
+      ctx.fillStyle=g; ctx.fillRect(-1,-1,2,2); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.rect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); ctx.clip(); drawHW(); ctx.restore(); }
   }
   ctx.restore();
   if(LP){ ctx.setLineDash([]); ctx.lineJoin="round"; ctx.strokeStyle="rgba(0,0,0,.38)"; ctx.lineWidth=4.4*k; ctx.stroke(LP);
@@ -689,6 +696,7 @@ function prefetchCells(){
     if(more) idle(run); };
   idle(run);
 }
+function rgbaOf(col){ const C=rgbaOf.c||(rgbaOf.c={}); let m=C[col]; if(!m){ const cx=document.createElement("canvas").getContext("2d"); cx.fillStyle=col; const v=String(cx.fillStyle); let r,g,b; if(v[0]==="#"){ r=parseInt(v.slice(1,3),16); g=parseInt(v.slice(3,5),16); b=parseInt(v.slice(5,7),16); } else { const q=v.match(/[\d.]+/g)||[0,0,0]; r=+q[0]; g=+q[1]; b=+q[2]; } m=C[col]=a=>"rgba("+r+","+g+","+b+","+a+")"; } return m; }
 const idle=f=>("requestIdleCallback" in window)?requestIdleCallback(f,{timeout:250}):setTimeout(f,40);
 function drawRealLabels(ctx,k,labels,placed,seen){
   ctx.font=`600 11px ${realFont}`; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.lineJoin="round";
