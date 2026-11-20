@@ -1477,7 +1477,7 @@ function openService(id,opts={}){
       </form>
       <ul class="revs">${revs}</ul>
     </section>
-    <section class="sec"><h3>Yaqin atrofda</h3>${nearbyServicesHtml(s,1200,4,s.id)}</section>`);
+    ${noteBox(s.id)}<section class="sec"><h3>Yaqin atrofda</h3>${nearbyServicesHtml(s,1200,4,s.id)}</section>`);
   renderMarkers(filtered(false));
   ensureVisible(s);
   if(opts.fromMap) revealPanelOnPhone();
@@ -2079,7 +2079,7 @@ function adminApply(){
   for(const sig of A_HID){ const id=sig.split("|")[0], s=byId(id); if(!s) continue; const i=s.reviews.findIndex(r=>revSig(id,r)===sig); if(i>=0){ dropRating(s,s.reviews[i]); s.reviews.splice(i,1); } }
 }
 adminApply();
-{ const _o=openService; openService=function(id,o){ _o(id,o); if(byId(id)){ RECENT=[id,...RECENT.filter(x=>x!==id)].slice(0,12); LSX.set(K_RECENT,RECENT); const rn=document.getElementById("revName"); if(rn&&!rn.value&&PROF.name) rn.value=PROF.name; } }; }
+{ const _o=openService; openService=function(id,o){ _o(id,o); if(byId(id)){ RECENT=[id,...RECENT.filter(x=>x!==id)].slice(0,12); LSX.set(K_RECENT,RECENT); VIEWS[id]=(VIEWS[id]||0)+1; LS.set(K_VIEWS,VIEWS); const rn=document.getElementById("revName"); if(rn&&!rn.value&&PROF.name) rn.value=PROF.name; } }; }
 
 let PN=null, PKIND="", PTAB="", PEDIT=null, PLIM=40, PSRCH="", PCAT="", PONLY=false, PARM=0;
 const pAuth=()=>{ try{ return sessionStorage.getItem("ns_admin_ok")==="1"; }catch(e){ return false; } };
@@ -2112,7 +2112,7 @@ function pClose(fromHash){
 }
 function pRender(){
   PN.querySelector(".pn-t").textContent=PKIND==="user"?"Kabinet":"Admin panel";
-  const tabs=PKIND==="user"?[["profile","Profil"],["inbox","Kelgan"+(unread()?" ("+unread()+")":"")],["acc","Akkauntlar"],["fav","Saralanganlar"],["rev","Sharhlarim"],["recent","Ko'rilganlar"],["set","Sozlamalar"]]
+  const tabs=PKIND==="user"?[["profile","Profil"],["inbox","Kelgan"+(unread()?" ("+unread()+")":"")],["acc","Akkauntlar"],["recs","Siz uchun"],["fav","Saralanganlar"],["notes","Eslatmalar"],["rev","Sharhlarim"],["recent","Ko'rilganlar"],["set","Sozlamalar"]]
     :(pAuth()?[["stats","Statistika"],["svc","Xizmatlar"],["rev","Sharhlar"],["rep","Xabarlar"+(repNew()?" ("+repNew()+")":"")],["set","Sozlamalar"],["sec","Xavfsizlik"]]:[]);
   PN.querySelector(".pn-tabs").innerHTML=tabs.map(([k,l])=>`<button type="button" role="tab" class="pn-tab" data-pa="tab" data-k="${k}" aria-selected="${PTAB===k}">${l}</button>`).join("");
   PN.querySelector(".pn-tabs").hidden=!tabs.length;
@@ -2129,6 +2129,8 @@ function pRenderBody(keepFocus){
 function pUser(){
   const favs=[...FAV].map(byId).filter(Boolean), mine=myRevAll(), rec=RECENT.map(byId).filter(Boolean);
   if(PTAB==="inbox") return pInbox();
+  if(PTAB==="recs") return pRecs();
+  if(PTAB==="notes") return pNotes();
   if(PTAB==="acc") return pAccounts();
   if(PTAB==="profile") return `<form class="pn-form" data-f="profile"><label>Ismingiz<input class="input" id="pn-name" maxlength="40" value="${esc(PROF.name||"")}" placeholder="Masalan, Aziz"></label>
     <p class="muted">Ism sharh yozganda avtomatik qo'yiladi. Ma'lumot faqat shu brauzerda saqlanadi.</p><div><button class="btn btn-primary" type="submit">Saqlash</button></div></form>
@@ -2162,7 +2164,7 @@ function pStats(){
   return `<div class="pn-stats">${pStat(services.length,"Xizmatlar")}${pStat(places.length,"Jamoat joylari")}${pStat(tot,"Baholar jami")}${pStat(rated.length?fmtR(avg):"-","O'rtacha reyting")}${pStat(myRevAll().length,"Foydalanuvchi sharhlari")}${pStat(A_ADD.length,"Admin qo'shgan")}${pStat(A_DEL.length,"O'chirilgan")}${pStat(FAV.size,"Saralanganlar (shu brauzer)")}</div>
     <h4 class="pn-h4">Toifalar bo'yicha</h4><ul class="pn-bars">${byCat.map(([l,n])=>`<li><span>${esc(l)}</span><i><b style="width:${Math.round(n/mx*100)}%"></b></i><em>${n}</em></li>`).join("")}</ul>
     <h4 class="pn-h4">Eng ko'p baholanganlar</h4><ol class="pn-top">${top(services,(a,b)=>b.count-a.count)}</ol>
-    <h4 class="pn-h4">Eng yuqori reyting (20+ baho)</h4><ol class="pn-top">${top(services.filter(s=>s.count>=20),(a,b)=>b.rating-a.rating)}</ol>`;
+    <h4 class="pn-h4">Eng yuqori reyting (20+ baho)</h4><ol class="pn-top">${top(services.filter(s=>s.count>=20),(a,b)=>b.rating-a.rating)}</ol>${viewsStat()}`;
 }
 function pSvcList(){
   const q=norm(PSRCH); let arr=services.filter(s=>(!PCAT||s.cat===PCAT)&&(!q||norm(s.name+" "+(s.district||"")+" "+(s.address||"")).includes(q)));
@@ -2308,6 +2310,7 @@ function pClick(e){
   if(a==="rep-del"){ REPORTS=REPORTS.filter(x=>x.id!==id); LS.set(K_REP,REPORTS); pRender(); return; }
   if(a==="rep-clear"){ REPORTS=REPORTS.filter(x=>x.status==="new"); LS.set(K_REP,REPORTS); pRender(); return; }
   if(a==="rep-open"){ pClose(true); try{ if(/^#(kabinet|admin)$/.test(location.hash)) history.replaceState(null,"",location.pathname+location.search); }catch(_){} location.hash="#s-"+id; return; }
+  if(a==="note-del"){ delete NOTES[id]; LS.set(K_NOTES,NOTES); pRenderBody(); return; }
   if(a==="usecenter"||a==="useuser"){ const p=a==="usecenter"?{x:view.x+view.w/2,y:view.y+view.h/2}:state.user, ll=toLatLng(p.x,p.y); PN.querySelector("#f-lat").value=ll.lat.toFixed(5); PN.querySelector("#f-lng").value=ll.lng.toFixed(5); const rg=regionAt(p); if(rg&&PN.querySelector("#f-region")) PN.querySelector("#f-region").value=rg.id; if(!PN.querySelector("#f-district").value) PN.querySelector("#f-district").value=nearestDistrict(Math.round(p.x),Math.round(p.y)); toast(a==="usecenter"?"Xarita markazi olindi":"Sizning nuqtangiz olindi"); pPreview(); return; }
   if(a==="addprice"){ PN.querySelector("#f-prices").insertAdjacentHTML("beforeend",pPriceRow()); const r=PN.querySelectorAll(".pn-pn"); r[r.length-1].focus(); return; }
   if(a==="delprice"){ const row=el.closest(".pn-price"), box=row.parentElement; if(box.children.length>1) row.remove(); else row.querySelectorAll("input").forEach(i=>i.value=""); return; }
@@ -2385,15 +2388,14 @@ function sgMark(){ sg.querySelectorAll(".sg-i").forEach((el,i)=>{ const on=i===s
 function sgShow(){
   const nq=norm(qBox.value), items=[]; let html="";
   if(!nq){
-    if(!RQ.length){ sgHide(); return; }
-    RQ.forEach(t=>items.push({k:"recent",t}));
-    html='<div class="sg-h"><span>Oxirgi qidiruvlar</span><button type="button" data-sg-clear="1">Tozalash</button></div>';
+    html='<div class="sg-h"><span>Tez tanlov: hozir ochiq, eng yaqin</span></div><div class="sg-q">'+CAT_KEYS.map(k=>`<button type="button" class="sg-qb" data-q="${k}"><i style="background:${CATS[k].color}"></i>${esc(CATS[k].label)}</button>`).join("")+'</div>';
+    if(RQ.length){ RQ.forEach(t=>items.push({k:"recent",t})); html+='<div class="sg-h"><span>Oxirgi qidiruvlar</span><button type="button" data-sg-clear="1">Tozalash</button></div>'; }
   } else {
     CAT_KEYS.forEach(k=>{ if(norm(CATS[k].label).includes(nq)) items.push({k:"cat",cat:k,t:CATS[k].label}); });
     services.filter(s=>matches(s,nq)).map(s=>({s,d:gdist(s,state.user)})).sort((a,b)=>a.d-b.d).slice(0,6).forEach(({s,d})=>items.push({k:"svc",s,d}));
   }
   sgItems=items; sgIdx=-1;
-  if(!items.length){ html+='<div class="sg-none">Hech narsa topilmadi</div>'; }
+  if(!items.length&&nq){ html+='<div class="sg-none">Hech narsa topilmadi</div>'; }
   html+=items.map((it,i)=>{
     const id='sg-'+i;
     if(it.k==="recent") return `<div class="sg-i" role="option" id="${id}" data-i="${i}"><span class="sg-ic">↺</span><span class="sg-t">${esc(it.t)}</span><button type="button" class="sg-x" data-rx="${i}" aria-label="Olib tashlash">×</button></div>`;
@@ -2423,6 +2425,7 @@ sg.addEventListener("mousedown",e=>{
   e.preventDefault();
   if(e.target.closest("[data-sg-clear]")){ RQ=[]; LS.set(K_QS,RQ); sgHide(); return; }
   const x=e.target.closest("[data-rx]"); if(x){ RQ.splice(+x.dataset.rx,1); LS.set(K_QS,RQ); sgShow(); return; }
+  const qb=e.target.closest("[data-q]"); if(qb){ quickPick(qb.dataset.q); return; }
   const it=e.target.closest(".sg-i"); if(it) sgPick(+it.dataset.i);
 });
 document.addEventListener("click",e=>{ if(!e.target.closest(".search")) sgHide(); });
@@ -2580,6 +2583,42 @@ function reportOpen(id){
 function pRepList(){
   if(!REPORTS.length) return `<p class="muted">Hali xabar yo'q. Foydalanuvchilar xizmatdagi xatolar haqida shu yerga yozadi (xizmat tafsilotida <b>Xato haqida</b> tugmasi).</p>`;
   return `<div class="pn-bar"><span class="muted">${REPORTS.length} ta xabar · ${repNew()} tasi yangi</span>${pBtn("rep-clear","Hal qilinganlarni tozalash")}</div><ul class="pn-list">${REPORTS.map(x=>{ const it=itemOf(x.item); return `<li class="pn-row${x.status==="new"?" pn-unread":""}"><div class="pn-rm"><b>${it?esc(it.name):"(o'chirilgan)"}</b><small>${esc(x.why)}${x.text?": «"+esc(x.text)+"»":""} · ${esc(accName(x.from))} · ${timeAgo(x.ts)}</small></div><div class="pn-ra">${it?pBtn("rep-open","Saytda ko'rish",`data-id="${esc(x.item)}"`):""}${x.status==="new"?pBtn("rep-ok","Hal qilindi",`data-id="${x.id}"`,"btn-primary"):'<span class="pill open">hal qilindi</span>'}${pBtn("rep-del","O'chirish",`data-id="${x.id}"`,"danger")}</div></li>`; }).join("")}</ul>`;
+}
+/* ===== Siz uchun tavsiyalar, tez tanlov, shaxsiy eslatmalar, ko'rishlar hisobi ===== */
+const K_NOTES="ns_notes"+ACC_SUF, K_VIEWS="ns_views"; let NOTES=LS.get(K_NOTES,{}), VIEWS=LS.get(K_VIEWS,{});
+const noteBox=id=>`<section class="sec"><h3>Mening eslatmam <small class="muted">faqat sizga ko'rinadi</small></h3><textarea class="input note" data-note="${esc(id)}" rows="2" maxlength="300" placeholder="Masalan, narxni so'rash kerak">${esc(NOTES[id]||"")}</textarea></section>`;
+let noteT=0;
+document.addEventListener("input",e=>{
+  const t=e.target; if(!(t.matches&&t.matches("textarea.note"))) return;
+  const id=t.dataset.note, v=t.value; clearTimeout(noteT);
+  noteT=setTimeout(()=>{ if(v.trim()) NOTES[id]=v.slice(0,300); else delete NOTES[id]; LS.set(K_NOTES,NOTES); },400);
+});
+function pNotes(){
+  const ids=Object.keys(NOTES).filter(id=>NOTES[id]&&byId(id));
+  if(!ids.length) return `<p class="muted">Hali eslatma yo'q. Xizmat tafsilotining pastidagi <b>Mening eslatmam</b> maydoniga yozing.</p>`;
+  return `<ul class="pn-list">${ids.map(id=>{ const it=byId(id); return pRow(esc(it.name),esc(NOTES[id]),pBtn("open","Ochish",`data-id="${esc(id)}"`,"btn-primary")+pBtn("note-del","O'chirish",`data-id="${esc(id)}"`,"danger")); }).join("")}</ul>`;
+}
+function pRecs(){
+  const hist=[...FAV,...RECENT].map(byId).filter(Boolean);
+  if(!hist.length) return `<p class="muted">Tavsiyalar ko'rgan va saralagan xizmatlaringizga qarab chiqadi. Bir necha xizmatni oching yoki \u2665 bilan belgilang.</p>`;
+  const w={}; hist.forEach(s=>{ w[s.cat]=(w[s.cat]||0)+1; }); const seen=new Set([...FAV,...RECENT]);
+  const cand=services.filter(s=>!seen.has(s.id)&&w[s.cat]&&s.count>=5).map(s=>{ const d=gdist(s,state.user); return {s,d,sc:w[s.cat]*(s.rating||0)*Math.log(2+s.count)/(1+d/3000)}; }).sort((a,b)=>b.sc-a.sc).slice(0,8);
+  if(!cand.length) return `<p class="muted">Hozircha mos tavsiya topilmadi.</p>`;
+  const top=Object.entries(w).sort((a,b)=>b[1]-a[1])[0][0];
+  return `<p class="muted">Ko'p ko'rgan toifangiz: <b>${esc(CATS[top].label)}</b>. Shunga o'xshash, yuqori baholangan va yaqin xizmatlar:</p><ul class="pn-list">${cand.map(({s,d})=>pRow(esc(s.name),`${esc(CATS[s.cat].label)} \u00b7 ${esc(s.district||"")} \u00b7 \u2605 ${fmtR(s.rating)} (${s.count}) \u00b7 ${fmtKm(d)}`,pBtn("open","Ochish",`data-id="${s.id}"`,"btn-primary"))).join("")}</ul>`;
+}
+function viewsStat(){
+  const arr=Object.entries(VIEWS).map(([id,n])=>[byId(id),n]).filter(x=>x[0]).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  return `<h4 class="pn-h4">Eng ko'p ko'rilganlar <small class="muted">(shu brauzerda)</small></h4>`+(arr.length?`<ol class="pn-top">${arr.map(([s,n])=>`<li>${esc(s.name)} <small class="muted">${n} marta</small></li>`).join("")}</ol>`:`<p class="muted">Hali xizmat ochilmagan.</p>`);
+}
+function quickPick(k){
+  sgHide(); qBox.value=""; state.q=""; state.cat=k; state.openNow=true; state.sort="dist";
+  const so=$("#sort"); if(so) so.value="dist"; const on=$("#openNow"); if(on) on.checked=true;
+  if(!vDetail.hidden) showList(); render();
+  const l=filtered(false), nm=CATS[k].label.toLowerCase();
+  toast(l.length?`Eng yaqin ochiq ${nm}: ${l[0].s.name}`:`Hozir ochiq ${nm} topilmadi`);
+  if(l.length) fitPoints([state.user,l[0].s],1.6);
+  qBox.blur();
 }
 applyTheme();
 drawBase(); drawCountry(); renderLayers(); renderOrigin();

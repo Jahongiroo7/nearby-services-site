@@ -970,3 +970,10 @@ html.sys-no-rt [data-act="rt"],html.sys-no-rt #rtBar{display:none!important}
 .rp-l{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font:600 12.5px/1.3 inherit;color:var(--muted);text-align:left}
 .rp-l .input{width:100%;box-sizing:border-box}
 html.sys-no-rep [data-act="report"]{display:none!important}
+
+/* ===== Tavsiyalar, tez tanlov, eslatma ===== */
+.sg-q{display:flex;flex-wrap:wrap;gap:6px;padding:2px 8px 10px}
+.sg-qb{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font:600 12.5px/1 inherit;cursor:pointer}
+.sg-qb:hover{background:var(--border)}
+.sg-qb i{width:8px;height:8px;border-radius:99px}
+textarea.note{width:100%;box-sizing:border-box;resize:vertical;min-height:56px}
