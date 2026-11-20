@@ -872,3 +872,24 @@ html.sys-no-kab [data-pn="user"]{display:none!important}
 .sh-link .btn{height:42px;white-space:nowrap}
 .sh-more{width:100%;height:42px;margin-bottom:6px}
 .sh-hint{margin:8px 0 0!important;font-size:12px!important;text-align:center}
+
+/* ===== Akkauntlar va kelgan ulashishlar ===== */
+.pn-btn{position:relative}
+.pn-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:#e11d48;color:#fff;font:800 11px/18px system-ui,sans-serif;text-align:center;box-shadow:0 0 0 2px var(--surface)}
+.ac-av{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:99px;color:#fff;font:800 16px/1 system-ui,sans-serif}
+.pn-unread{border-color:#1951fc;box-shadow:inset 3px 0 0 #1951fc}
+.sh-sec{margin-bottom:14px;padding:12px;border-radius:16px;background:var(--surface-2);border:1px solid var(--border)}
+.sh-t{margin-bottom:8px;font:700 13px/1.3 inherit;text-align:left}
+.sh-t small{font-weight:500;color:var(--muted)}
+.sh-accs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.sh-ac{position:relative;display:inline-flex;align-items:center;gap:8px;padding:5px 13px 5px 5px;border-radius:99px;border:1.5px solid var(--border-strong);background:var(--surface);color:var(--text);cursor:pointer;font:600 13px/1 inherit}
+.sh-ac input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.sh-ac .ac-av{width:28px;height:28px;font-size:13px}
+.sh-ac:has(input:checked){border-color:#1951fc;background:var(--accent-soft)}
+.sh-ac:has(input:focus-visible){outline:3px solid #6db4ff;outline-offset:2px}
+.sh-send{display:flex;gap:8px}
+.sh-send .input{flex:1;min-width:0;height:40px}
+.sh-send .btn{height:40px;white-space:nowrap}
+
+/* ===== Zamonaviy logotip soyasi ===== */
+.cicon.logo svg,.dicon.logo svg{filter:drop-shadow(0 3px 6px rgba(3,10,40,.22))}
