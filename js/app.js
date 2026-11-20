@@ -1192,31 +1192,34 @@ function filtered(ignoreCat){
    (bosh harflar, rang, shakl va bezak nomdan olingan hash'ga bog'liq; turi - burchakdagi kichik belgi) */
 const LOGO_PAL=[["#1951fc","#6db4ff"],["#7c3aed","#c4a7ff"],["#0d9488","#5eead4"],["#ea580c","#fdba74"],["#db2777","#f9a8d4"],["#16a34a","#86efac"],["#0b2cb1","#3781fc"],["#be123c","#fda4af"],["#0369a1","#7dd3fc"],["#a16207","#fde047"]];
 const logoCache=new Map();
+let LOGO_N=0;
+const CAT_PAL={
+  barber:[["#4338ca","#818cf8"],["#1e1b4b","#6366f1"],["#5b21b6","#a78bfa"],["#0f172a","#6366f1"]],
+  shop:[["#be185d","#f472b6"],["#9d174d","#fb7185"],["#7e22ce","#f0abfc"],["#c2410c","#fb923c"]],
+  food:[["#c2410c","#fb923c"],["#b91c1c","#f87171"],["#a16207","#fcd34d"],["#9a3412","#fdba74"]],
+  pharm:[["#15803d","#4ade80"],["#047857","#34d399"],["#0f766e","#5eead4"],["#166534","#86efac"]],
+  auto:[["#44403c","#a8a29e"],["#1f2937","#60a5fa"],["#7f1d1d","#f87171"],["#292524","#fbbf24"]],
+  repair:[["#6d28d9","#c4b5fd"],["#1d4ed8","#93c5fd"],["#0e7490","#67e8f9"],["#4c1d95","#a78bfa"]]
+};
+const LOGO_SHAPES=[
+  'M13 0h22a13 13 0 0 1 13 13v22a13 13 0 0 1-13 13H13A13 13 0 0 1 0 35V13A13 13 0 0 1 13 0z',
+  'M24 0A24 24 0 1 1 24 48 24 24 0 0 1 24 0z',
+  'M6 3h36a2 2 0 0 1 2 2v21c0 11-9 17-20 21C13 43 4 37 4 26V5a2 2 0 0 1 2-2z',
+  'M24 1l20 11.5v23L24 47 4 35.500v-23z'
+];
 function serviceLogo(s){
   if(s.logo) return `<img class="logoimg" src="${esc(s.logo)}" alt="${esc(s.name)}" loading="lazy" decoding="async">`;
-  let svg=logoCache.get(s.id); if(svg) return svg;
-  const words=s.name.replace(/['’ʻ`]/g,"").split(/[\s\-–]+/).filter(Boolean);
-  const ini=(words.length>1?words[0][0]+words[1][0]:words[0].slice(0,2)).toUpperCase();
-  let h=2166136261; for(const ch of s.name){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } h>>>=0;
-  const pal=LOGO_PAL[h%LOGO_PAL.length], shape=(h>>>4)%5, deco=(h>>>8)%4, rot=((h>>>12)%4)*15;
-  const body=[`<circle cx="24" cy="24" r="24" fill="${pal[0]}"/>`,
-    `<rect width="48" height="48" rx="13" fill="${pal[0]}"/>`,
-    `<path d="M24 0C42 0 48 6 48 24S42 48 24 48 0 42 0 24 6 0 24 0z" fill="${pal[0]}"/>`,
-    `<path d="M24 1l20 11.5v23L24 47 4 35.500v-23z" fill="${pal[0]}"/>`,
-    `<path d="M6 4h36a2 2 0 0 1 2 2v20c0 11-9 17-20 21C13 43 4 37 4 26V6a2 2 0 0 1 2-2z" fill="${pal[0]}"/>`][shape];
-  const clip=[`<clipPath id="c${h}"><circle cx="24" cy="24" r="24"/></clipPath>`,`<clipPath id="c${h}"><rect width="48" height="48" rx="13"/></clipPath>`,
-    `<clipPath id="c${h}"><path d="M24 0C42 0 48 6 48 24S42 48 24 48 0 42 0 24 6 0 24 0z"/></clipPath>`,
-    `<clipPath id="c${h}"><path d="M24 1l20 11.5v23L24 47 4 35.500v-23z"/></clipPath>`,
-    `<clipPath id="c${h}"><path d="M6 4h36a2 2 0 0 1 2 2v20c0 11-9 17-20 21C13 43 4 37 4 26V6a2 2 0 0 1 2-2z"/></clipPath>`][shape];
-  const dec=[`<rect x="-10" y="${6+rot/5}" width="70" height="12" fill="${pal[1]}" opacity=".35" transform="rotate(-30 24 24)"/>`,
-    `<circle cx="38" cy="8" r="17" fill="${pal[1]}" opacity=".38"/>`,
-    `<circle cx="24" cy="24" r="17" fill="none" stroke="${pal[1]}" stroke-width="2.500" opacity=".55"/>`,
-    `<circle cx="8" cy="40" r="19" fill="${pal[1]}" opacity=".32"/>`][deco];
-  const fs=ini.length>1?19:22, cat=CATS[s.cat];
-  svg=`<svg viewBox="0 0 48 48" role="img" aria-label="${esc(s.name)}"><defs>${clip}</defs>${body}<g clip-path="url(#c${h})">${dec}<rect width="48" height="20" fill="#fff" opacity=".1"/></g>
-    <text x="24" y="${ini.length>1?30:31}" text-anchor="middle" font-family="Manrope,Inter,system-ui,sans-serif" font-size="${fs}" font-weight="800" fill="#fff" letter-spacing="-.5">${esc(ini)}</text>
-    <circle cx="38" cy="38" r="8.500" fill="${cat.color}" stroke="#fff" stroke-width="1.800"/><svg x="33.500" y="33.500" width="9" height="9" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2.600;stroke-linecap:round;stroke-linejoin:round"><use href="#ic-${s.cat}"/></svg></svg>`;
-  logoCache.set(s.id,svg); return svg;
+  let svg;
+  const words=String(s.name||"?").replace(/['’ʻ`]/g,"").split(/[\s\-–]+/).filter(Boolean);
+  const ini=((words.length>1?words[0][0]+words[1][0]:(words[0]||"?").slice(0,2))).toUpperCase();
+  let h=2166136261; for(const ch of String(s.name)){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } h>>>=0;
+  const pals=CAT_PAL[s.cat]||CAT_PAL.barber, pal=pals[h%pals.length], v=(h>>>5)%4, shape=LOGO_SHAPES[v], uid=h+"_"+(++LOGO_N), gid="g"+uid, cid="c"+uid;
+  const shield=v===2, pw=shield?24:30;
+  svg=`<svg viewBox="0 0 48 48" role="img" aria-label="${esc(s.name)}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${pal[1]}"/><stop offset="1" stop-color="${pal[0]}"/></linearGradient><clipPath id="${cid}"><path d="${shape}"/></clipPath></defs>
+    <path d="${shape}" fill="url(#${gid})"/><g clip-path="url(#${cid})"><ellipse cx="14" cy="6" rx="20" ry="11" fill="#fff" opacity=".14"/>${v===1?'<circle cx="24" cy="24" r="20.5" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="1.5"/>':""}${v===3?'<path d="M-4 40L40 -4v8L4 44z" fill="#fff" opacity=".1"/>':""}</g>
+    <svg x="12" y="${shield?4.5:5}" width="24" height="24" style="color:#fff"><use href="#ic-${CATS[s.cat]?s.cat:"barber"}"/></svg>
+    <rect x="${24-pw/2}" y="33" width="${pw}" height="10" rx="5" fill="#fff" fill-opacity=".96"/><text x="24" y="40.4" text-anchor="middle" font-family="Manrope,Inter,system-ui,sans-serif" font-size="7.600" font-weight="800" fill="${pal[0]}" letter-spacing=".3">${esc(ini)}</text></svg>`;
+  return svg;
 }
 function cardHtml(s,d){
   const c=CATS[s.cat],st=status(s);
@@ -2100,14 +2103,14 @@ function pSvcList(){
     <div class="pn-bar"><input class="input" id="pn-q" type="search" placeholder="Nomi yoki tuman bo'yicha qidirish" value="${esc(PSRCH)}" aria-label="Qidirish">
     <select class="input" id="pn-cat" aria-label="Toifa"><option value="">Barcha toifalar</option>${CAT_KEYS.map(k=>`<option value="${k}"${PCAT===k?" selected":""}>${CATS[k].label}</option>`).join("")}</select></div>
     <p class="muted">${arr.length} ta xizmat</p>
-    <ul class="pn-list">${shown.map(s=>`<li class="pn-row"><span class="pn-ico" style="background:${CATS[s.cat]?CATS[s.cat].color:"#64748b"}">${esc((s.name||"?")[0])}</span><div class="pn-rm"><b>${esc(s.name)}${s.id[0]==="a"?' <span class="pill open">yangi</span>':""}</b><small>${CATS[s.cat]?CATS[s.cat].label:""} · ${esc(regionById(s.region||"ts").short)} · ${esc(s.district||"")} · ★ ${s.count?fmtR(s.rating):"-"} (${s.count})</small></div><div class="pn-ra">${pBtn("open","Saytda ko'rish",`data-id="${s.id}"`)}${pBtn("edit","Tahrirlash",`data-id="${s.id}"`)}${pBtn("del","O'chirish",`data-id="${s.id}"`,"danger")}</div></li>`).join("")}</ul>
+    <ul class="pn-list">${shown.map(s=>`<li class="pn-row"><span class="pn-ico logo">${serviceLogo(s)}</span><div class="pn-rm"><b>${esc(s.name)}${s.id[0]==="a"?' <span class="pill open">yangi</span>':""}</b><small>${CATS[s.cat]?CATS[s.cat].label:""} · ${esc(regionById(s.region||"ts").short)} · ${esc(s.district||"")} · ★ ${s.count?fmtR(s.rating):"-"} (${s.count})</small></div><div class="pn-ra">${pBtn("open","Saytda ko'rish",`data-id="${s.id}"`)}${pBtn("edit","Tahrirlash",`data-id="${s.id}"`)}${pBtn("del","O'chirish",`data-id="${s.id}"`,"danger")}</div></li>`).join("")}</ul>
     ${more?`<div class="pn-more">${pBtn("more","Yana ko'rsatish")}</div>`:""}`;
 }
 const pPriceRow=(n="",p="")=>`<div class="pn-price"><input class="input pn-pn" maxlength="60" placeholder="Xizmat nomi" value="${esc(n)}"><input class="input pn-pp" inputmode="numeric" placeholder="Narxi, so'm" value="${p?esc(p):""}"><button type="button" class="pn-del" data-pa="delprice" aria-label="Olib tashlash">×</button></div>`;
 function pPreview(){
   const el=PN.querySelector("#pn-prev"); if(!el) return; const g=id=>{ const e=PN.querySelector("#"+id); return e?e.value:""; };
   const cat=(PN.querySelector('input[name="f-catr"]:checked')||{}).value||"barber", c=CATS[cat], name=g("f-name").trim()||"Xizmat nomi", dis=g("f-district").trim(), h24=PN.querySelector("#f-h24")&&PN.querySelector("#f-h24").checked;
-  el.innerHTML=`<span class="pn-ico lg" style="background:${c.color}">${esc(name[0].toUpperCase())}</span><div class="pn-rm"><b>${esc(name)}</b><small>${c.label}${dis?" · "+esc(dis):""}</small><small>${h24?"24 soat ochiq":esc(g("f-open")||"09:00")+" – "+esc(g("f-close")||"18:00")} · <span class="pill open">Yangi</span></small></div>`;
+  el.innerHTML=`<span class="pn-ico lg logo">${serviceLogo({id:"prev",name,cat})}</span><div class="pn-rm"><b>${esc(name)}</b><small>${c.label}${dis?" · "+esc(dis):""}</small><small>${h24?"24 soat ochiq":esc(g("f-open")||"09:00")+" – "+esc(g("f-close")||"18:00")} · <span class="pill open">Yangi</span></small></div>`;
 }
 function pSvcForm(s){
   const ll=s?toLatLng(s.x,s.y):toLatLng(state.user.x,state.user.y), v=(k,d="")=>esc(s&&s[k]!=null?s[k]:d), curCat=s?s.cat:"barber";
@@ -2295,7 +2298,7 @@ function sgShow(){
     if(it.k==="recent") return `<div class="sg-i" role="option" id="${id}" data-i="${i}"><span class="sg-ic">↺</span><span class="sg-t">${esc(it.t)}</span><button type="button" class="sg-x" data-rx="${i}" aria-label="Olib tashlash">×</button></div>`;
     if(it.k==="cat") return `<div class="sg-i" role="option" id="${id}" data-i="${i}"><span class="sg-ic" style="background:${CATS[it.cat].color}"></span><span class="sg-t">Toifa: <b>${esc(it.t)}</b></span></div>`;
     const s=it.s, c=CATS[s.cat];
-    return `<div class="sg-i" role="option" id="${id}" data-i="${i}"><span class="sg-ic" style="background:${c.color}">${esc((s.name||"?")[0])}</span><span class="sg-t"><b>${esc(s.name)}</b><small>${c.label} · ${esc(s.district||"")}</small></span><span class="sg-d">${fmtKm(it.d)}</span></div>`;
+    return `<div class="sg-i" role="option" id="${id}" data-i="${i}"><span class="sg-ic logo">${serviceLogo(s)}</span><span class="sg-t"><b>${esc(s.name)}</b><small>${c.label} · ${esc(s.district||"")}</small></span><span class="sg-d">${fmtKm(it.d)}</span></div>`;
   }).join("");
   sg.innerHTML=html; sg.hidden=false; qBox.setAttribute("aria-expanded","true");
 }

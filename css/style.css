@@ -851,3 +851,7 @@ html.sys-no-kab [data-pn="user"]{display:none!important}
 .info dd.cwarn{color:#b45309;font-weight:600}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .info dd.cwarn{color:#fbbf24}}
 :root[data-theme="dark"] .info dd.cwarn{color:#fbbf24}
+
+/* ===== Xizmat logotiplari ===== */
+.sg-ic.logo,.pn-ico.logo{background:none!important;color:inherit;border-radius:0}
+.sg-ic.logo svg,.pn-ico.logo svg{display:block;width:100%;height:100%}
