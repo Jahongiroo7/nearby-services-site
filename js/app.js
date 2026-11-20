@@ -2101,7 +2101,7 @@ function pBuild(){
 }
 function pOpen(kind,fromHash){
   if(!PN) pBuild(); const was=PN.hidden===false&&PKIND===kind;
-  PKIND=kind; if(!was){ PTAB=kind==="user"?(unread()?"inbox":"profile"):"stats"; PEDIT=null; PLIM=40; PSRCH=""; PCAT=""; PONLY=false; }
+  PKIND=kind; if(!was){ PTAB=kind==="user"?"profile":"stats"; PEDIT=null; PLIM=40; PSRCH=""; PCAT=""; PONLY=false; }
   PN.hidden=false; document.documentElement.classList.add("pn-open"); pRender(); if(PKIND==="user"&&PTAB==="inbox") markRead();
   if(!fromHash){ try{ history.pushState(null,"","#"+(kind==="user"?"kabinet":"admin")); }catch(e){} }
   const x=PN.querySelector(".pn-x"); if(x) x.focus({preventScroll:true});
@@ -2112,7 +2112,7 @@ function pClose(fromHash){
 }
 function pRender(){
   PN.querySelector(".pn-t").textContent=PKIND==="user"?"Kabinet":"Admin panel";
-  const tabs=PKIND==="user"?[["profile","Profil"],["inbox","Kelgan"+(unread()?" ("+unread()+")":"")],["recs","Siz uchun"],["fav","Saralanganlar"],["notes","Eslatmalar"],["rev","Sharhlarim"],["recent","Ko'rilganlar"],["set","Sozlamalar"]]
+  const tabs=PKIND==="user"?[["profile","Profil"],["recs","Siz uchun"],["fav","Saralanganlar"],["notes","Eslatmalar"],["rev","Sharhlarim"],["recent","Ko'rilganlar"],["set","Sozlamalar"]]
     :(pAuth()?[["stats","Statistika"],["svc","Xizmatlar"],["rev","Sharhlar"],["rep","Xabarlar"+(repNew()?" ("+repNew()+")":"")],["set","Sozlamalar"],["sec","Xavfsizlik"]]:[]);
   PN.querySelector(".pn-tabs").innerHTML=tabs.map(([k,l])=>`<button type="button" role="tab" class="pn-tab" data-pa="tab" data-k="${k}" aria-selected="${PTAB===k}">${l}</button>`).join("");
   PN.querySelector(".pn-tabs").hidden=!tabs.length;
@@ -2128,7 +2128,6 @@ function pRenderBody(keepFocus){
 /* ----- foydalanuvchi paneli ----- */
 function pUser(){
   const favs=[...FAV].map(byId).filter(Boolean), mine=myRevAll(), rec=RECENT.map(byId).filter(Boolean);
-  if(PTAB==="inbox") return pInbox();
   if(PTAB==="recs") return pRecs();
   if(PTAB==="notes") return pNotes();
   if(PTAB==="profile") return `<form class="pn-form" data-f="profile"><label>Ismingiz<input class="input" id="pn-name" maxlength="40" value="${esc(PROF.name||"")}" placeholder="Masalan, Aziz"></label>
