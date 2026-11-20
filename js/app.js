@@ -12,7 +12,7 @@ const LS = {
 /* Tizim sozlamalari (admin panelida o'zgartiriladi); standart qiymatlar */
 const SYS_KEY="ns_sys";
 const SYS_DEF={name:"Nearby",sub:"Services · Toshkent",lang:"uz",theme:"auto",sort:"dist",radius:0,openNow:false,
-  fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,fCompare:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
+  fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,fCompare:true,fRoute:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
 let SYS=Object.assign({},SYS_DEF,LS.get(SYS_KEY,{}));
 /* Akkauntlar (demo): har birining o'z saralanganlari va kelgan ulashishlari bor */
 const ACC_KEY="ns_acc", ACCS_KEY="ns_accounts", K_SH="ns_shares";
@@ -1456,7 +1456,7 @@ function openService(id,opts={}){
     <div class="actions">
       ${mapLinks(s)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button>
       <a class="btn btn-accent" href="${telHref(s.phone)}">${ic("phone")} Qo'ng'iroq qilish</a>
-      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${CMP.includes(s.id)?"Taqqoslashda":"Taqqoslash"}</span></button>
+      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${CMP.includes(s.id)?"Taqqoslashda":"Taqqoslash"}</span></button><button class="btn" data-act="rt" data-id="${s.id}" aria-pressed="${ROUTE.includes(s.id)}">➕ <span class="rt">${ROUTE.includes(s.id)?"Marshrutda":"Marshrutga"}</span></button>
       <button class="btn" data-act="to-review">${ic("star")} Sharh yozish</button>
     </div>
     ${dsec("phone","Aloqa",phoneRow(s.phone)+`<div><dt>${ic("pin")} Manzil</dt><dd>${esc(s.address)}, ${esc(locality(s))}</dd></div>`)}
@@ -1492,7 +1492,7 @@ function openPlace(id,opts={}){
       <div class="dtitle"><span class="eyebrow">${t.one}</span><h2>${esc(p.name)}</h2></div></div>
     <p class="desc">${esc(p.desc)}</p>
     ${galleryHtml(p.t,t.color,p.id)}
-    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button></div>
+    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="rt" data-id="${p.id}" aria-pressed="${ROUTE.includes(p.id)}">➕ <span class="rt">${ROUTE.includes(p.id)?"Marshrutda":"Marshrutga"}</span></button></div>
     ${dsec("building","Umumiy ma'lumot",`<div><dt>${ic("building")} Hudud</dt><dd>${esc(p.area||`${p.district} tumani, Toshkent`)}</dd></div><div><dt>${ic("clock")} Ish vaqti</dt><dd>${t.hours} <span class="muted small">(taxminiy)</span></dd></div>`)}
     ${dsec("route","Masofa va yo'l",`<div><dt>${ic("route")} Sizdan</dt><dd>${routeHtml(p)}</dd></div>`)}
     ${dsec("map","Joylashuv",coordRow(p))}
@@ -1706,6 +1706,7 @@ document.addEventListener("click",e=>{
   else if(a==="share") shareThis();
   else if(a==="fav") toggleFav(act.dataset.id);
   else if(a==="cmp") cmpToggle(act.dataset.id);
+  else if(a==="rt") rtToggle(act.dataset.id);
   else if(a==="copy") copyText(act.dataset.copy);
   else if(a==="route"){ const t=selectedPoint(); if(t) fitPoints([state.user,t],1.5); }
   else if(a==="to-review"){ const f=$("#revForm"); if(f){f.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>$("#rs5").focus({preventScroll:true}),350);} }
@@ -2217,7 +2218,7 @@ function pAdminSettings(){
 /* ----- tizim sozlamalari ----- */
 function applySys(){
   const R=document.documentElement.classList;
-  R.toggle("sys-no-reviews",!SYS.fReviews); R.toggle("sys-no-fav",!SYS.fFav); R.toggle("sys-no-share",!SYS.fShare); R.toggle("sys-no-gallery",!SYS.fGallery); R.toggle("sys-no-phone",!SYS.fPhone); R.toggle("sys-no-kab",!SYS.fKabinet); R.toggle("sys-no-cmp",!SYS.fCompare);
+  R.toggle("sys-no-reviews",!SYS.fReviews); R.toggle("sys-no-fav",!SYS.fFav); R.toggle("sys-no-share",!SYS.fShare); R.toggle("sys-no-gallery",!SYS.fGallery); R.toggle("sys-no-phone",!SYS.fPhone); R.toggle("sys-no-kab",!SYS.fKabinet); R.toggle("sys-no-cmp",!SYS.fCompare); R.toggle("sys-no-rt",!SYS.fRoute);
   if(!SYS.fFav&&state.fav) state.fav=false;
   const nm=String(SYS.name||"").trim()||"Nearby", b=document.querySelector(".brand b"); if(b) b.textContent=nm;
   const sm=document.querySelector(".brand small"); if(sm&&SYS.sub) sm.textContent=SYS.sub;
@@ -2241,7 +2242,7 @@ function pSysForm(){
       <div class="pn-2"><label>Tartiblash${sel("sys-sort",[["dist","Eng yaqini"],["rating","Reytingi yuqori"],["reviews","Ko'p sharhlangan"]],SYS.sort)}</label><label>Masofa${sel("sys-radius",[[0,"Hammasi"],[1,"1 km"],[5,"5 km"],[10,"10 km"]],SYS.radius)}</label></div>
       ${sw("sys-open","Faqat hozir ochiq xizmatlar",SYS.openNow,"Sayt ochilganda shu filtr yoqilgan bo'ladi")}</section>
     <section class="pn-sec"><h4><i>3</i> Imkoniyatlar</h4>
-      ${sw("sys-reviews","Sharh yozish",SYS.fReviews,"O'chirilsa, yangi sharh yozib bo'lmaydi")}${sw("sys-fav","Saralanganlar",SYS.fFav,"♥ tugmasi va filtr")}${sw("sys-share","Ulashish tugmasi",SYS.fShare)}${sw("sys-gallery","Rasmlar galereyasi",SYS.fGallery)}${sw("sys-phone","\"Namuna raqam\" izohi",SYS.fPhone,"Telefon raqami yonidagi eslatma")}${sw("sys-kab","Kabinet tugmasi",SYS.fKabinet,"Tepadagi foydalanuvchi paneli")}${sw("sys-cmp","Taqqoslash",SYS.fCompare,"Xizmatlarni yonma-yon solishtirish")}</section>
+      ${sw("sys-reviews","Sharh yozish",SYS.fReviews,"O'chirilsa, yangi sharh yozib bo'lmaydi")}${sw("sys-fav","Saralanganlar",SYS.fFav,"♥ tugmasi va filtr")}${sw("sys-share","Ulashish tugmasi",SYS.fShare)}${sw("sys-gallery","Rasmlar galereyasi",SYS.fGallery)}${sw("sys-phone","\"Namuna raqam\" izohi",SYS.fPhone,"Telefon raqami yonidagi eslatma")}${sw("sys-kab","Kabinet tugmasi",SYS.fKabinet,"Tepadagi foydalanuvchi paneli")}${sw("sys-cmp","Taqqoslash",SYS.fCompare,"Xizmatlarni yonma-yon solishtirish")}${sw("sys-rt","Marshrut rejasi",SYS.fRoute,"Bir necha joyga ketma-ket yo'l")}</section>
     <section class="pn-sec"><h4><i>4</i> E'lon</h4>
       ${sw("sys-ann","Saytning tepasida e'lon ko'rsatish",SYS.annOn)}
       <label>E'lon matni<textarea class="input" id="sys-anntext" rows="2" maxlength="200" placeholder="Masalan, Bayram kunlari ish vaqti o'zgargan">${esc(SYS.annText||"")}</textarea></label>
@@ -2327,7 +2328,7 @@ function pSubmit(e){
     const g=id=>PN.querySelector("#"+id), name=g("sys-name").value.trim();
     if(name.length<2) return fail("Sayt nomi kamida 2 belgi bo'lsin");
     SYS=Object.assign({},SYS_DEF,{name,sub:g("sys-sub").value.trim(),lang:g("sys-lang").value,theme:g("sys-theme").value,sort:g("sys-sort").value,radius:+g("sys-radius").value,openNow:g("sys-open").checked,
-      fReviews:g("sys-reviews").checked,fFav:g("sys-fav").checked,fShare:g("sys-share").checked,fGallery:g("sys-gallery").checked,fPhone:g("sys-phone").checked,fKabinet:g("sys-kab").checked,fCompare:g("sys-cmp").checked,
+      fReviews:g("sys-reviews").checked,fFav:g("sys-fav").checked,fShare:g("sys-share").checked,fGallery:g("sys-gallery").checked,fPhone:g("sys-phone").checked,fKabinet:g("sys-kab").checked,fCompare:g("sys-cmp").checked,fRoute:g("sys-rt").checked,
       annOn:g("sys-ann").checked,annText:g("sys-anntext").value.trim(),annKind:g("sys-annkind").value,maint:g("sys-maint").checked,maintText:g("sys-mainttext").value.trim()||SYS_DEF.maintText});
     if(SYS.annOn&&!SYS.annText) return fail("E'lon yoqilgan, lekin matni bo'sh");
     LS.set(SYS_KEY,SYS); applySys(); toast("Sozlamalar saqlandi"); pRenderBody(); return;
@@ -2462,6 +2463,78 @@ function cmpOpen(){
   window.addEventListener("keydown",key,true); document.body.appendChild(d); d.querySelector('[data-cm="x"]').focus();
 }
 cmpBar();
+/* ===== Marshrut rejasi: bir nechta joyga ketma-ket yo'l ===== */
+const K_RT="ns_route"; let ROUTE=LS.get(K_RT,[]).filter(id=>itemOf(id)).slice(0,6), RT_SHOW=false, RT_MODE=LS.get("ns_route_mode","car");
+function rtLeg(a,b){
+  const d=gdist(a,b); let rt=null; try{ rt=getRoute(a,b); }catch(e){}
+  if(rt&&!rt.far&&(rt.walk||rt.drive)) return {len:(rt.drive||rt.walk).len,walk:rt.walk?rt.walk.min:walkMin(d),car:rt.drive?rt.drive.min:driveMin(d),rt};
+  return {len:d,walk:walkMin(d),car:driveMin(d),rt:null};
+}
+function rtPlan(){ const out=[]; let prev=state.user; for(const id of ROUTE){ const t=itemOf(id); if(!t) continue; out.push({id,t,L:rtLeg(prev,t)}); prev=t; } return out; }
+function rtSave(){
+  LS.set(K_RT,ROUTE); rtBar();
+  document.querySelectorAll('[data-act="rt"]').forEach(b=>{ const on=ROUTE.includes(b.dataset.id); b.setAttribute("aria-pressed",String(on)); const t=b.querySelector(".rt"); if(t) t.textContent=on?"Marshrutda":"Marshrutga"; });
+  if(!ROUTE.length) RT_SHOW=false;
+  try{ renderOverlays(); }catch(e){}
+}
+function rtToggle(id){
+  if(ROUTE.includes(id)) ROUTE=ROUTE.filter(x=>x!==id);
+  else { if(ROUTE.length>=6){ toast("Marshrutga eng ko'pi bilan 6 ta joy qo'shish mumkin"); return; } ROUTE.push(id); toast("Marshrutga qo'shildi: "+ROUTE.length+"-joy"); }
+  rtSave();
+}
+function rtBar(){
+  let b=document.getElementById("rtBar"), R=document.documentElement.classList;
+  if(!ROUTE.length||!SYS.fRoute){ if(b) b.remove(); R.remove("has-rt"); return; }
+  R.add("has-rt");
+  if(!b){ b=document.createElement("div"); b.id="rtBar"; b.className="cmp-bar rt-bar"; b.setAttribute("role","region"); b.setAttribute("aria-label","Marshrut rejasi"); document.body.appendChild(b);
+    b.addEventListener("click",e=>{ const a=e.target.closest("[data-rb]"); if(!a) return; if(a.dataset.rb==="open") rtOpen(); else if(a.dataset.rb==="clear"){ ROUTE=[]; rtSave(); } }); }
+  b.innerHTML=`<span class="cmp-n rt-n">${ROUTE.length}</span><span class="cmp-names">Marshrut: ${ROUTE.map(id=>esc((itemOf(id)||{}).name||"")).join(" → ")}</span><button type="button" class="btn btn-primary sm" data-rb="open">Marshrut</button><button type="button" class="btn sm" data-rb="clear" aria-label="Tozalash">×</button>`;
+}
+function rtLinks(plan){
+  const ll=o=>{ const p=toLatLng(o.x,o.y); return p.lat.toFixed(6)+","+p.lng.toFixed(6); };
+  if(!plan.length) return {g:"",y:""};
+  const mode=RT_MODE==="walk"?"walking":"driving", last=plan[plan.length-1].t, way=plan.slice(0,-1).map(p=>ll(p.t)).join("|");
+  const g="https://www.google.com/maps/dir/?api=1&origin="+ll(state.user)+"&destination="+ll(last)+(way?"&waypoints="+encodeURIComponent(way):"")+"&travelmode="+mode;
+  const y="https://yandex.com/maps/?rtext="+[ll(state.user),...plan.map(p=>ll(p.t))].join("~")+"&rtt="+(RT_MODE==="walk"?"pd":"auto");
+  return {g,y};
+}
+function rtOpen(){
+  document.querySelectorAll(".rt-dlg").forEach(x=>x.remove());
+  const plan=rtPlan(); if(!plan.length){ toast("Marshrut bo'sh"); return; }
+  const prev=document.activeElement, d=document.createElement("div"); d.className="pn-cf cmp-dlg rt-dlg"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Marshrut rejasi");
+  const km=m=>fmtKm(m), tot=plan.reduce((a,p)=>({len:a.len+p.L.len,walk:a.walk+p.L.walk,car:a.car+p.L.car}),{len:0,walk:0,car:0}), mode=RT_MODE==="walk"?"walk":"car", L=rtLinks(plan);
+  const leg=p=>`${km(p.L.len)} · ~${fmtMin(p.L[mode])}`;
+  d.innerHTML=`<div class="pn-cfbox cmp-box rt-box"><button type="button" class="sh-x" data-rt="x" aria-label="Yopish">×</button><h3>Marshrut rejasi</h3>
+    <div class="rt-sum"><div><b>${km(tot.len)}</b><span>jami masofa</span></div><div><b>~${fmtMin(tot[mode])}</b><span>${mode==="walk"?"piyoda":"mashinada"}</span></div><div class="rt-mode" role="group" aria-label="Yurish usuli"><button type="button" data-rt="mode-car" aria-pressed="${mode==="car"}">Mashinada</button><button type="button" data-rt="mode-walk" aria-pressed="${mode==="walk"}">Piyoda</button></div></div>
+    <ol class="rt-list"><li class="rt-start"><span class="rt-no">A</span><div class="rt-m"><b>${esc(state.user.label||"Siz turgan joy")}</b><small>Boshlanish nuqtasi</small></div></li>${plan.map((p,i)=>`<li><span class="rt-no">${i+1}</span><span class="rt-logo">${p.t.cat?serviceLogo(p.t):""}</span><div class="rt-m"><b>${esc(p.t.name)}</b><small>${leg(p)}</small></div><div class="rt-ops"><button type="button" class="btn sm" data-rt="up" data-i="${i}" aria-label="Yuqoriga"${i===0?" disabled":""}>↑</button><button type="button" class="btn sm" data-rt="down" data-i="${i}" aria-label="Pastga"${i===plan.length-1?" disabled":""}>↓</button><button type="button" class="btn sm" data-rt="rm" data-i="${i}" aria-label="Olib tashlash">×</button></div></li>`).join("")}</ol>
+    <div class="rt-acts"><button type="button" class="btn btn-primary" data-rt="show">${RT_SHOW?"Xaritadan yashirish":"Xaritada ko'rsatish"}</button><button type="button" class="btn" data-rt="opt">Eng qisqa tartib</button></div>
+    <div class="rt-acts"><a class="btn" href="${esc(L.g)}" target="_blank" rel="noopener noreferrer">Google Maps</a><a class="btn" href="${esc(L.y)}" target="_blank" rel="noopener noreferrer">Yandex Maps</a><button type="button" class="btn" data-rt="clear">Tozalash</button></div>
+    <p class="sh-hint">Vaqt taxminiy: tirbandlik hisobga olinmagan. "Eng qisqa tartib" joylarni sizdan boshlab eng yaqinidan boshlab joylashtiradi.</p></div>`;
+  const key=e=>{ if(e.key==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); close(); } };
+  const close=()=>{ d.remove(); window.removeEventListener("keydown",key,true); if(prev&&prev.focus){ try{ prev.focus({preventScroll:true}); }catch(e){} } };
+  d.addEventListener("click",e=>{
+    if(e.target===d||e.target.closest('[data-rt="x"]')){ close(); return; }
+    const b=e.target.closest("[data-rt]"); if(!b) return; const a=b.dataset.rt, i=+b.dataset.i;
+    if(a==="mode-car"||a==="mode-walk"){ RT_MODE=a==="mode-walk"?"walk":"car"; LS.set("ns_route_mode",RT_MODE); close(); rtOpen(); return; }
+    if(a==="up"&&i>0){ [ROUTE[i-1],ROUTE[i]]=[ROUTE[i],ROUTE[i-1]]; rtSave(); close(); rtOpen(); return; }
+    if(a==="down"&&i<ROUTE.length-1){ [ROUTE[i+1],ROUTE[i]]=[ROUTE[i],ROUTE[i+1]]; rtSave(); close(); rtOpen(); return; }
+    if(a==="rm"){ ROUTE.splice(i,1); rtSave(); close(); if(ROUTE.length) rtOpen(); return; }
+    if(a==="clear"){ ROUTE=[]; rtSave(); close(); return; }
+    if(a==="opt"){ const left=ROUTE.map(id=>itemOf(id)).filter(Boolean), out=[]; let cur=state.user; while(left.length){ let bi=0; left.forEach((t,k)=>{ if(gdist(cur,t)<gdist(cur,left[bi])) bi=k; }); cur=left.splice(bi,1)[0]; out.push(cur.id); } ROUTE=out; rtSave(); toast("Joylar eng qisqa tartibda joylashtirildi"); close(); rtOpen(); return; }
+    if(a==="show"){ RT_SHOW=!RT_SHOW; rtSave(); close(); if(RT_SHOW){ fitPoints([state.user,...plan.map(p=>p.t)],1.4); if(matchMedia("(max-width:860px)").matches){ try{ document.getElementById("mapwrap").scrollIntoView({behavior:"smooth",block:"start"}); }catch(_){} } } return; }
+  });
+  window.addEventListener("keydown",key,true); document.body.appendChild(d); d.querySelector('[data-rt="x"]').focus();
+}
+function rtDraw(){
+  if(!RT_SHOW||!ROUTE.length||!SYS.fRoute) return;
+  const pd=r=>"M"+r.pts.map(q=>Math.round(q[0])+","+Math.round(q[1])).join("L"); let path="", pins="", prev=state.user;
+  ROUTE.forEach((id,i)=>{ const t=itemOf(id); if(!t) return; const L=rtLeg(prev,t), r=L.rt&&!L.rt.far?(L.rt.drive||L.rt.walk):null;
+    path+=r?`<path class="route-case" d="${pd(r)}"/><path class="route-car" d="${pd(r)}"/>`:`<line class="route" x1="${prev.x}" y1="${prev.y}" x2="${t.x}" y2="${t.y}"/>`;
+    pins+=`<g data-sx="${t.x}" data-sy="${t.y}" style="pointer-events:none"><circle class="rp-dot" r="13"/><text class="rp-n" y="4.500" text-anchor="middle">${i+1}</text></g>`; prev=t; });
+  $("#gRoute").insertAdjacentHTML("beforeend",path); $("#gMark").insertAdjacentHTML("beforeend",pins);
+}
+{ const _ro=renderOverlays; renderOverlays=function(){ _ro(); rtDraw(); }; }
+rtBar();
 applyTheme();
 drawBase(); drawCountry(); renderLayers(); renderOrigin();
 const r0=svg.getBoundingClientRect(); pxW=Math.max(1,r0.width); pxH=Math.max(1,r0.height); sizeReal(); readColors();

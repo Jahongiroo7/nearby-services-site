@@ -920,3 +920,39 @@ html.sys-no-cmp [data-act="cmp"],html.sys-no-cmp #cmpBar{display:none!important}
 .cmp-dlg{grid-template-columns:minmax(0,1fr)}
 .cmp-box{min-width:0;max-width:100%;box-sizing:border-box}
 .cmp-scroll{min-width:0}
+
+/* ===== Ro'yxat: logotip va matn orasi ===== */
+.card{grid-template-columns:auto minmax(0,1fr) auto!important;gap:16px!important}
+.mini .card{gap:12px!important}
+.mini .cicon.logo{width:36px;height:36px}
+
+/* ===== Marshrut rejasi ===== */
+.rt-bar{z-index:61}
+.rt-n{background:#1951fc!important;color:#fff!important}
+html.has-rt .cmp-bar:not(.rt-bar){bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+@media (max-width:640px){.rt-bar .cmp-names{display:block;max-width:44vw}html.has-rt .cmp-bar:not(.rt-bar){bottom:calc(142px + env(safe-area-inset-bottom,0px))}}
+.rt-box{width:min(520px,100%)}
+.rt-sum{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:6px 0 12px;padding:12px;border-radius:16px;background:var(--surface-2);border:1px solid var(--border)}
+.rt-sum div:not(.rt-mode){display:flex;flex-direction:column;gap:2px}
+.rt-sum b{font:800 18px/1.1 var(--display,inherit)}
+.rt-sum span{font-size:12px;color:var(--muted)}
+.rt-mode{margin-left:auto;display:flex;gap:4px;padding:3px;border-radius:999px;background:var(--surface);border:1px solid var(--border)}
+.rt-mode button{height:30px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--text);font:600 12px/1 inherit;cursor:pointer}
+.rt-mode button[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink)}
+.rt-list{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:8px;max-height:min(42vh,340px);overflow:auto}
+.rt-list li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border)}
+.rt-no{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:99px;background:#1951fc;color:#fff;font:800 12px/1 system-ui}
+.rt-start .rt-no{background:#16a34a}
+.rt-logo{flex:none;width:34px;height:34px}
+.rt-logo svg{width:100%;height:100%;display:block}
+.rt-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rt-m b{font-size:14px;overflow-wrap:anywhere}
+.rt-m small{color:var(--muted);font-size:12px}
+.rt-ops{flex:none;display:flex;gap:4px}
+.rt-ops .btn{height:30px;min-width:30px;padding:0 8px}
+.rt-ops .btn[disabled]{opacity:.35;cursor:not-allowed}
+.rt-acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.rt-acts .btn{height:40px;padding:0 16px;text-decoration:none;display:inline-flex;align-items:center}
+.rp-dot{fill:#1951fc;stroke:#fff;stroke-width:3}
+.rp-n{fill:#fff;font:800 13px system-ui,sans-serif}
+html.sys-no-rt [data-act="rt"],html.sys-no-rt #rtBar{display:none!important}
