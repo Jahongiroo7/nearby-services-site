@@ -857,3 +857,18 @@ html.sys-no-kab [data-pn="user"]{display:none!important}
 .sg-ic.logo svg,.pn-ico.logo svg{display:block;width:100%;height:100%}
 
 .cicon.logo{width:46px;height:46px;flex:none}
+
+/* ===== Ulashish oynasi ===== */
+.sh-box{position:relative;width:min(400px,100%);text-align:left}
+.sh-box h3{margin:0 0 2px;text-align:center}
+.sh-name{margin:0 0 14px!important;text-align:center;font-weight:600;color:var(--text)!important}
+.sh-x{position:absolute;top:10px;right:10px;width:34px;height:34px;border:0;border-radius:99px;background:var(--surface-2);color:var(--text);font:400 22px/1 system-ui;cursor:pointer}
+.sh-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.sh-app{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:16px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);text-decoration:none;font:600 12.5px/1.2 inherit}
+.sh-app:hover{background:var(--border)}
+.sh-app i{display:grid;place-items:center;width:42px;height:42px;border-radius:99px;color:#fff;font:800 19px/1 system-ui;font-style:normal}
+.sh-link{display:flex;gap:8px;margin-bottom:10px}
+.sh-link .input{flex:1;min-width:0;height:42px}
+.sh-link .btn{height:42px;white-space:nowrap}
+.sh-more{width:100%;height:42px;margin-bottom:6px}
+.sh-hint{margin:8px 0 0!important;font-size:12px!important;text-align:center}

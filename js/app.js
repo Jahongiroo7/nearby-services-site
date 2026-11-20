@@ -2020,8 +2020,21 @@ function syncHash(){
 }
 function shareThis(){
   const s=state.sel, o=s?(byId(s.id)||places.find(p=>p.id===s.id)):null, name=o?o.name:"Nearby Services";
-  const url=location.href.split("#")[0]+hashNow();
-  if(navigator.share){ navigator.share({title:name,text:name+" — Nearby Services",url}).catch(()=>{}); } else copyText(url);
+  const url=location.href.split("#")[0]+hashNow(), text=name+" — Nearby Services", eu=encodeURIComponent(url), et=encodeURIComponent(text);
+  const apps=[["Telegram","#229ED9","T","https://t.me/share/url?url="+eu+"&text="+et],["WhatsApp","#25D366","W","https://wa.me/?text="+encodeURIComponent(text+" "+url)],["Facebook","#1877F2","f","https://www.facebook.com/sharer/sharer.php?u="+eu],["X","#111827","X","https://twitter.com/intent/tweet?url="+eu+"&text="+et],["Email","#6b7280","@","mailto:?subject="+et+"&body="+encodeURIComponent(text+"\n"+url)],["SMS","#16a34a","S","sms:?body="+encodeURIComponent(text+" "+url)]];
+  const prev=document.activeElement, d=document.createElement("div"); d.className="pn-cf sh-dlg"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Ulashish");
+  d.innerHTML='<div class="pn-cfbox sh-box"><button type="button" class="sh-x" data-sh="x" aria-label="Yopish">×</button><h3>Ulashish</h3><p class="sh-name"></p><div class="sh-apps">'+apps.map(([n,c,l,h])=>`<a class="sh-app" href="${esc(h)}" target="_blank" rel="noopener noreferrer"><i style="background:${c}">${l}</i><span>${n}</span></a>`).join("")+'</div><div class="sh-link"><input class="input" readonly aria-label="Havola"><button type="button" class="btn btn-primary" data-sh="copy">Nusxa olish</button></div>'+(navigator.share?'<button type="button" class="btn sh-more" data-sh="native">Boshqa ilovalar orqali yuborish…</button>':"")+'<p class="sh-hint">Havolani olgan odam xizmatni to\'g\'ridan-to\'g\'ri ochadi. Saytda foydalanuvchi akkauntlari yo\'q, shuning uchun yuborish Telegram, WhatsApp kabi ilovalar orqali amalga oshadi.</p></div>';
+  d.querySelector(".sh-name").textContent=name; d.querySelector("input").value=url;
+  const key=e=>{ if(e.key==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); close(); } };
+  const close=()=>{ d.remove(); window.removeEventListener("keydown",key,true); if(prev&&prev.focus){ try{ prev.focus({preventScroll:true}); }catch(e){} } };
+  d.addEventListener("click",e=>{
+    if(e.target===d||e.target.closest('[data-sh="x"]')){ close(); return; }
+    const b=e.target.closest("[data-sh]"); if(!b) return;
+    if(b.dataset.sh==="copy") copyText(url);
+    else if(b.dataset.sh==="native"){ navigator.share({title:name,text,url}).then(close).catch(()=>{}); }
+  });
+  d.querySelector("input").addEventListener("focus",e=>e.target.select());
+  window.addEventListener("keydown",key,true); document.body.appendChild(d); d.querySelector(".sh-app").focus();
 }
 function routeFromHash(){
   const h=location.hash||""; let m;
