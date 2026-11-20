@@ -956,3 +956,17 @@ html.has-rt .cmp-bar:not(.rt-bar){bottom:calc(70px + env(safe-area-inset-bottom,
 .rp-dot{fill:#1951fc;stroke:#fff;stroke-width:3}
 .rp-n{fill:#fff;font:800 13px system-ui,sans-serif}
 html.sys-no-rt [data-act="rt"],html.sys-no-rt #rtBar{display:none!important}
+
+/* ===== Haftalik jadval, xabar, "Foydali" ===== */
+.wk{margin-top:6px}
+.wk summary{cursor:pointer;color:var(--accent-strong,#1951fc);font:600 12.5px/1.4 inherit}
+.wk-t{border-collapse:collapse;margin-top:6px;font-size:13px;width:100%;max-width:300px}
+.wk-t th,.wk-t td{padding:4px 0;text-align:left;font-weight:500}
+.wk-t th{color:var(--muted);padding-right:14px}
+.wk-t .wk-today th,.wk-t .wk-today td{font-weight:800;color:var(--text)}
+.wk-off{color:var(--muted)}
+.vote{margin-top:6px;height:30px;font-size:12px}
+.vote[aria-pressed="true"]{background:var(--accent-soft);border-color:#1951fc;color:var(--accent-strong,#1951fc)}
+.rp-l{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font:600 12.5px/1.3 inherit;color:var(--muted);text-align:left}
+.rp-l .input{width:100%;box-sizing:border-box}
+html.sys-no-rep [data-act="report"]{display:none!important}

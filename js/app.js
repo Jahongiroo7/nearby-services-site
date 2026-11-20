@@ -12,7 +12,7 @@ const LS = {
 /* Tizim sozlamalari (admin panelida o'zgartiriladi); standart qiymatlar */
 const SYS_KEY="ns_sys";
 const SYS_DEF={name:"Nearby",sub:"Services · Toshkent",lang:"uz",theme:"auto",sort:"dist",radius:0,openNow:false,
-  fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,fCompare:true,fRoute:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
+  fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,fCompare:true,fRoute:true,fReport:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
 let SYS=Object.assign({},SYS_DEF,LS.get(SYS_KEY,{}));
 /* Akkauntlar (demo): har birining o'z saralanganlari va kelgan ulashishlari bor */
 const ACC_KEY="ns_acc", ACCS_KEY="ns_accounts", K_SH="ns_shares";
@@ -1446,7 +1446,7 @@ function openService(id,opts={}){
   const c=CATS[s.cat], st=status(s), d=gdist(s,state.user), tr=travel(d);
   const total=s.count;
   const bars=[5,4,3,2,1].map(n=>{const p=s.count?Math.round((s.dist?s.dist[n-1]:0)*100):0;return `<div class="bar"><span>${n}</span><i><b style="width:${p}%"></b></i><span>${p}%</span></div>`;}).join("");
-  const revs=s.reviews.map(r=>`<li class="rev"><div class="rv-h"><span class="av">${esc((r.name||"?")[0])}</span><b>${esc(r.name)}</b>${starsHtml(r.stars)}<span class="muted">${r.ts?relDays(Math.floor((Date.now()-r.ts)/864e5)):relDays(r.ago)}</span></div><p>${esc(r.text)}</p></li>`).join("");
+  const revs=sortRevs(s).map(r=>`<li class="rev"><div class="rv-h"><span class="av">${esc((r.name||"?")[0])}</span><b>${esc(r.name)}</b>${starsHtml(r.stars)}<span class="muted">${r.ts?relDays(Math.floor((Date.now()-r.ts)/864e5)):relDays(r.ago)}</span></div><p>${esc(r.text)}</p>${voteBtn(s.id,r)}</li>`).join("");
   showDetail(`
     <button class="back" data-act="back">${ic("back")} Ro'yxatga qaytish</button>
     <div class="dhead"><span class="dicon logo">${serviceLogo(s)}</span>
@@ -1456,7 +1456,7 @@ function openService(id,opts={}){
     <div class="actions">
       ${mapLinks(s)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button>
       <a class="btn btn-accent" href="${telHref(s.phone)}">${ic("phone")} Qo'ng'iroq qilish</a>
-      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${CMP.includes(s.id)?"Taqqoslashda":"Taqqoslash"}</span></button><button class="btn" data-act="rt" data-id="${s.id}" aria-pressed="${ROUTE.includes(s.id)}">➕ <span class="rt">${ROUTE.includes(s.id)?"Marshrutda":"Marshrutga"}</span></button>
+      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${CMP.includes(s.id)?"Taqqoslashda":"Taqqoslash"}</span></button><button class="btn" data-act="rt" data-id="${s.id}" aria-pressed="${ROUTE.includes(s.id)}">➕ <span class="rt">${ROUTE.includes(s.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${s.id}">⚑ Xato haqida</button>
       <button class="btn" data-act="to-review">${ic("star")} Sharh yozish</button>
     </div>
     ${dsec("phone","Aloqa",phoneRow(s.phone)+`<div><dt>${ic("pin")} Manzil</dt><dd>${esc(s.address)}, ${esc(locality(s))}</dd></div>`)}
@@ -1464,7 +1464,7 @@ function openService(id,opts={}){
       ${s.desc?`<p class="desc dsec-desc">${esc(s.desc)}</p>`:""}
       ${s.prices&&s.prices.length?`<ul class="prices pr-in">${s.prices.map(([n,p])=>`<li><span>${esc(n)}</span><b>${fmtSum(p)}</b></li>`).join("")}</ul>`:`<p class="muted pr-in" style="margin:0">Narxlar hali kiritilmagan.</p>`}
     </section>
-    ${dsec("clock","Ish vaqti",`<div><dt>${ic("clock")} Jadval</dt><dd>${hoursText(s)}</dd></div><div><dt>${ic("star")} Holati</dt><dd><span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${st.text}</span></dd></div>${closeWarn(s,st,tr)}`)}
+    ${dsec("clock","Ish vaqti",`<div><dt>${ic("clock")} Jadval</dt><dd>${hoursText(s)}${weekHtml(s)}</dd></div><div><dt>${ic("star")} Holati</dt><dd><span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${st.text}</span></dd></div>${closeWarn(s,st,tr)}`)}
     ${dsec("route","Masofa va yo'l",`<div><dt>${ic("route")} Sizdan</dt><dd>${routeHtml(s)}</dd></div>`)}
     <section class="sec" id="revSec"><h3>Sharhlar <span class="muted">${total}</span></h3>
       ${s.count?`<div class="rsum"><div class="rbig"><b>${fmtR(s.rating)}</b>${starsHtml(s.rating)}<small>${s.count} ta baho</small></div><div class="bars">${bars}</div></div>`:`<p class="muted" style="margin:0">Hali sharh yo'q. Birinchi bo'lib baho bering.</p>`}
@@ -1492,7 +1492,7 @@ function openPlace(id,opts={}){
       <div class="dtitle"><span class="eyebrow">${t.one}</span><h2>${esc(p.name)}</h2></div></div>
     <p class="desc">${esc(p.desc)}</p>
     ${galleryHtml(p.t,t.color,p.id)}
-    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="rt" data-id="${p.id}" aria-pressed="${ROUTE.includes(p.id)}">➕ <span class="rt">${ROUTE.includes(p.id)?"Marshrutda":"Marshrutga"}</span></button></div>
+    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="rt" data-id="${p.id}" aria-pressed="${ROUTE.includes(p.id)}">➕ <span class="rt">${ROUTE.includes(p.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${p.id}">⚑ Xato haqida</button></div>
     ${dsec("building","Umumiy ma'lumot",`<div><dt>${ic("building")} Hudud</dt><dd>${esc(p.area||`${p.district} tumani, Toshkent`)}</dd></div><div><dt>${ic("clock")} Ish vaqti</dt><dd>${t.hours} <span class="muted small">(taxminiy)</span></dd></div>`)}
     ${dsec("route","Masofa va yo'l",`<div><dt>${ic("route")} Sizdan</dt><dd>${routeHtml(p)}</dd></div>`)}
     ${dsec("map","Joylashuv",coordRow(p))}
@@ -1707,6 +1707,8 @@ document.addEventListener("click",e=>{
   else if(a==="fav") toggleFav(act.dataset.id);
   else if(a==="cmp") cmpToggle(act.dataset.id);
   else if(a==="rt") rtToggle(act.dataset.id);
+  else if(a==="vote") toggleVote(act);
+  else if(a==="report") reportOpen(act.dataset.id);
   else if(a==="copy") copyText(act.dataset.copy);
   else if(a==="route"){ const t=selectedPoint(); if(t) fitPoints([state.user,t],1.5); }
   else if(a==="to-review"){ const f=$("#revForm"); if(f){f.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>$("#rs5").focus({preventScroll:true}),350);} }
@@ -2111,7 +2113,7 @@ function pClose(fromHash){
 function pRender(){
   PN.querySelector(".pn-t").textContent=PKIND==="user"?"Kabinet":"Admin panel";
   const tabs=PKIND==="user"?[["profile","Profil"],["inbox","Kelgan"+(unread()?" ("+unread()+")":"")],["acc","Akkauntlar"],["fav","Saralanganlar"],["rev","Sharhlarim"],["recent","Ko'rilganlar"],["set","Sozlamalar"]]
-    :(pAuth()?[["stats","Statistika"],["svc","Xizmatlar"],["rev","Sharhlar"],["set","Sozlamalar"],["sec","Xavfsizlik"]]:[]);
+    :(pAuth()?[["stats","Statistika"],["svc","Xizmatlar"],["rev","Sharhlar"],["rep","Xabarlar"+(repNew()?" ("+repNew()+")":"")],["set","Sozlamalar"],["sec","Xavfsizlik"]]:[]);
   PN.querySelector(".pn-tabs").innerHTML=tabs.map(([k,l])=>`<button type="button" role="tab" class="pn-tab" data-pa="tab" data-k="${k}" aria-selected="${PTAB===k}">${l}</button>`).join("");
   PN.querySelector(".pn-tabs").hidden=!tabs.length;
   pRenderBody();
@@ -2149,6 +2151,7 @@ function pAdmin(){
   if(PTAB==="stats") return pStats();
   if(PTAB==="svc") return pSvcList();
   if(PTAB==="rev") return pRevList();
+  if(PTAB==="rep") return pRepList();
   if(PTAB==="set") return pSysForm();
   return pAdminSettings();
 }
@@ -2218,7 +2221,7 @@ function pAdminSettings(){
 /* ----- tizim sozlamalari ----- */
 function applySys(){
   const R=document.documentElement.classList;
-  R.toggle("sys-no-reviews",!SYS.fReviews); R.toggle("sys-no-fav",!SYS.fFav); R.toggle("sys-no-share",!SYS.fShare); R.toggle("sys-no-gallery",!SYS.fGallery); R.toggle("sys-no-phone",!SYS.fPhone); R.toggle("sys-no-kab",!SYS.fKabinet); R.toggle("sys-no-cmp",!SYS.fCompare); R.toggle("sys-no-rt",!SYS.fRoute);
+  R.toggle("sys-no-reviews",!SYS.fReviews); R.toggle("sys-no-fav",!SYS.fFav); R.toggle("sys-no-share",!SYS.fShare); R.toggle("sys-no-gallery",!SYS.fGallery); R.toggle("sys-no-phone",!SYS.fPhone); R.toggle("sys-no-kab",!SYS.fKabinet); R.toggle("sys-no-cmp",!SYS.fCompare); R.toggle("sys-no-rt",!SYS.fRoute); R.toggle("sys-no-rep",!SYS.fReport);
   if(!SYS.fFav&&state.fav) state.fav=false;
   const nm=String(SYS.name||"").trim()||"Nearby", b=document.querySelector(".brand b"); if(b) b.textContent=nm;
   const sm=document.querySelector(".brand small"); if(sm&&SYS.sub) sm.textContent=SYS.sub;
@@ -2242,7 +2245,7 @@ function pSysForm(){
       <div class="pn-2"><label>Tartiblash${sel("sys-sort",[["dist","Eng yaqini"],["rating","Reytingi yuqori"],["reviews","Ko'p sharhlangan"]],SYS.sort)}</label><label>Masofa${sel("sys-radius",[[0,"Hammasi"],[1,"1 km"],[5,"5 km"],[10,"10 km"]],SYS.radius)}</label></div>
       ${sw("sys-open","Faqat hozir ochiq xizmatlar",SYS.openNow,"Sayt ochilganda shu filtr yoqilgan bo'ladi")}</section>
     <section class="pn-sec"><h4><i>3</i> Imkoniyatlar</h4>
-      ${sw("sys-reviews","Sharh yozish",SYS.fReviews,"O'chirilsa, yangi sharh yozib bo'lmaydi")}${sw("sys-fav","Saralanganlar",SYS.fFav,"♥ tugmasi va filtr")}${sw("sys-share","Ulashish tugmasi",SYS.fShare)}${sw("sys-gallery","Rasmlar galereyasi",SYS.fGallery)}${sw("sys-phone","\"Namuna raqam\" izohi",SYS.fPhone,"Telefon raqami yonidagi eslatma")}${sw("sys-kab","Kabinet tugmasi",SYS.fKabinet,"Tepadagi foydalanuvchi paneli")}${sw("sys-cmp","Taqqoslash",SYS.fCompare,"Xizmatlarni yonma-yon solishtirish")}${sw("sys-rt","Marshrut rejasi",SYS.fRoute,"Bir necha joyga ketma-ket yo'l")}</section>
+      ${sw("sys-reviews","Sharh yozish",SYS.fReviews,"O'chirilsa, yangi sharh yozib bo'lmaydi")}${sw("sys-fav","Saralanganlar",SYS.fFav,"♥ tugmasi va filtr")}${sw("sys-share","Ulashish tugmasi",SYS.fShare)}${sw("sys-gallery","Rasmlar galereyasi",SYS.fGallery)}${sw("sys-phone","\"Namuna raqam\" izohi",SYS.fPhone,"Telefon raqami yonidagi eslatma")}${sw("sys-kab","Kabinet tugmasi",SYS.fKabinet,"Tepadagi foydalanuvchi paneli")}${sw("sys-cmp","Taqqoslash",SYS.fCompare,"Xizmatlarni yonma-yon solishtirish")}${sw("sys-rt","Marshrut rejasi",SYS.fRoute,"Bir necha joyga ketma-ket yo'l")}${sw("sys-rep","Xato haqida xabar",SYS.fReport,"Foydalanuvchilar xatolarni adminga yuboradi")}</section>
     <section class="pn-sec"><h4><i>4</i> E'lon</h4>
       ${sw("sys-ann","Saytning tepasida e'lon ko'rsatish",SYS.annOn)}
       <label>E'lon matni<textarea class="input" id="sys-anntext" rows="2" maxlength="200" placeholder="Masalan, Bayram kunlari ish vaqti o'zgargan">${esc(SYS.annText||"")}</textarea></label>
@@ -2301,6 +2304,10 @@ function pClick(e){
   if(a==="inbox-open"){ pClose(true); try{ if(/^#(kabinet|admin)$/.test(location.hash)) history.replaceState(null,"",location.pathname+location.search); }catch(_){} location.hash="#s-"+id; return; }
   if(a==="inbox-del"){ SHARES=SHARES.filter(x=>x.id!==id); LS.set(K_SH,SHARES); updBadge(); pRenderBody(); return; }
   if(a==="inbox-clear"){ pConfirm({title:"Xabarlarni tozalash",text:"Sizga kelgan barcha ulashishlar o'chiriladi.",ok:"Ha, tozalash"},()=>{ SHARES=SHARES.filter(x=>x.to!==ACC_ID); LS.set(K_SH,SHARES); updBadge(); pRenderBody(); }); return; }
+  if(a==="rep-ok"){ const r=REPORTS.find(x=>x.id===id); if(r){ r.status="resolved"; LS.set(K_REP,REPORTS); } pRender(); return; }
+  if(a==="rep-del"){ REPORTS=REPORTS.filter(x=>x.id!==id); LS.set(K_REP,REPORTS); pRender(); return; }
+  if(a==="rep-clear"){ REPORTS=REPORTS.filter(x=>x.status==="new"); LS.set(K_REP,REPORTS); pRender(); return; }
+  if(a==="rep-open"){ pClose(true); try{ if(/^#(kabinet|admin)$/.test(location.hash)) history.replaceState(null,"",location.pathname+location.search); }catch(_){} location.hash="#s-"+id; return; }
   if(a==="usecenter"||a==="useuser"){ const p=a==="usecenter"?{x:view.x+view.w/2,y:view.y+view.h/2}:state.user, ll=toLatLng(p.x,p.y); PN.querySelector("#f-lat").value=ll.lat.toFixed(5); PN.querySelector("#f-lng").value=ll.lng.toFixed(5); const rg=regionAt(p); if(rg&&PN.querySelector("#f-region")) PN.querySelector("#f-region").value=rg.id; if(!PN.querySelector("#f-district").value) PN.querySelector("#f-district").value=nearestDistrict(Math.round(p.x),Math.round(p.y)); toast(a==="usecenter"?"Xarita markazi olindi":"Sizning nuqtangiz olindi"); pPreview(); return; }
   if(a==="addprice"){ PN.querySelector("#f-prices").insertAdjacentHTML("beforeend",pPriceRow()); const r=PN.querySelectorAll(".pn-pn"); r[r.length-1].focus(); return; }
   if(a==="delprice"){ const row=el.closest(".pn-price"), box=row.parentElement; if(box.children.length>1) row.remove(); else row.querySelectorAll("input").forEach(i=>i.value=""); return; }
@@ -2328,7 +2335,7 @@ function pSubmit(e){
     const g=id=>PN.querySelector("#"+id), name=g("sys-name").value.trim();
     if(name.length<2) return fail("Sayt nomi kamida 2 belgi bo'lsin");
     SYS=Object.assign({},SYS_DEF,{name,sub:g("sys-sub").value.trim(),lang:g("sys-lang").value,theme:g("sys-theme").value,sort:g("sys-sort").value,radius:+g("sys-radius").value,openNow:g("sys-open").checked,
-      fReviews:g("sys-reviews").checked,fFav:g("sys-fav").checked,fShare:g("sys-share").checked,fGallery:g("sys-gallery").checked,fPhone:g("sys-phone").checked,fKabinet:g("sys-kab").checked,fCompare:g("sys-cmp").checked,fRoute:g("sys-rt").checked,
+      fReviews:g("sys-reviews").checked,fFav:g("sys-fav").checked,fShare:g("sys-share").checked,fGallery:g("sys-gallery").checked,fPhone:g("sys-phone").checked,fKabinet:g("sys-kab").checked,fCompare:g("sys-cmp").checked,fRoute:g("sys-rt").checked,fReport:g("sys-rep").checked,
       annOn:g("sys-ann").checked,annText:g("sys-anntext").value.trim(),annKind:g("sys-annkind").value,maint:g("sys-maint").checked,maintText:g("sys-mainttext").value.trim()||SYS_DEF.maintText});
     if(SYS.annOn&&!SYS.annText) return fail("E'lon yoqilgan, lekin matni bo'sh");
     LS.set(SYS_KEY,SYS); applySys(); toast("Sozlamalar saqlandi"); pRenderBody(); return;
@@ -2535,6 +2542,45 @@ function rtDraw(){
 }
 { const _ro=renderOverlays; renderOverlays=function(){ _ro(); rtDraw(); }; }
 rtBar();
+/* ===== Haftalik jadval, xato haqida xabar, sharhlarga "Foydali" ===== */
+function weekHtml(s){
+  const today=(new Date().getDay()+6)%7;
+  const rows=DAYS_FULL.map((n,i)=>{ const on=s.h24||(s.days||[]).includes(i), t=s.h24?"24 soat":on?`${s.open}–${s.close}`:"Yopiq"; return `<tr${i===today?' class="wk-today"':""}><th>${n[0].toUpperCase()+n.slice(1)}${i===today?" (bugun)":""}</th><td${on?"":' class="wk-off"'}>${t}</td></tr>`; }).join("");
+  return `<details class="wk"><summary>Haftalik jadval</summary><table class="wk-t"><tbody>${rows}</tbody></table></details>`;
+}
+const K_VOTES="ns_votes", K_MYV="ns_myvotes"+ACC_SUF; let VOTES=LS.get(K_VOTES,{}), MYV=new Set(LS.get(K_MYV,[]));
+const vcount=sig=>VOTES[sig]||0;
+function voteBtn(sid,r){ const sig=revSig(sid,r), n=vcount(sig), on=MYV.has(sig); return `<button type="button" class="btn sm vote" data-act="vote" data-sig="${esc(sig)}" aria-pressed="${on}">👍 Foydali${n?` <span>${n}</span>`:""}</button>`; }
+function sortRevs(s){ const arr=s.reviews.slice(); if(arr.some(r=>vcount(revSig(s.id,r))>0)) arr.sort((a,b)=>vcount(revSig(s.id,b))-vcount(revSig(s.id,a))); return arr; }
+function toggleVote(btn){
+  const sig=btn.dataset.sig;
+  if(MYV.has(sig)){ MYV.delete(sig); VOTES[sig]=Math.max(0,(VOTES[sig]||1)-1); } else { MYV.add(sig); VOTES[sig]=(VOTES[sig]||0)+1; }
+  LS.set(K_VOTES,VOTES); LS.set(K_MYV,[...MYV]);
+  const n=vcount(sig); btn.setAttribute("aria-pressed",String(MYV.has(sig))); btn.innerHTML="👍 Foydali"+(n?` <span>${n}</span>`:"");
+}
+const K_REP="ns_reports"; let REPORTS=LS.get(K_REP,[]);
+const REP_WHY=["Telefon raqami noto'g'ri","Manzil yoki joylashuv noto'g'ri","Ish vaqti noto'g'ri","Xizmat yopilgan yoki mavjud emas","Boshqa muammo"];
+const repNew=()=>REPORTS.filter(x=>x.status==="new").length;
+function reportOpen(id){
+  const o=itemOf(id); if(!o) return;
+  const prev=document.activeElement, d=document.createElement("div"); d.className="pn-cf rep-dlg"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Xato haqida xabar");
+  d.innerHTML=`<div class="pn-cfbox sh-box"><button type="button" class="sh-x" data-rp="x" aria-label="Yopish">×</button><h3>Xato haqida xabar</h3><p class="sh-name"></p>
+    <label class="rp-l">Muammo turi<select class="input" id="rp-why">${REP_WHY.map(w=>`<option>${esc(w)}</option>`).join("")}</select></label>
+    <label class="rp-l">Izoh (ixtiyoriy)<textarea class="input" id="rp-text" rows="3" maxlength="300" placeholder="To'g'ri ma'lumotni yozing"></textarea></label>
+    <div class="pn-cfa"><button type="button" class="btn" data-rp="x">Bekor qilish</button><button type="button" class="btn btn-primary" data-rp="send">Yuborish</button></div><p class="sh-hint">Xabar admin paneliga tushadi.</p></div>`;
+  d.querySelector(".sh-name").textContent=o.name;
+  const key=e=>{ if(e.key==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); close(); } };
+  const close=()=>{ d.remove(); window.removeEventListener("keydown",key,true); if(prev&&prev.focus){ try{ prev.focus({preventScroll:true}); }catch(e){} } };
+  d.addEventListener("click",e=>{
+    if(e.target===d||e.target.closest('[data-rp="x"]')){ close(); return; }
+    if(e.target.closest('[data-rp="send"]')){ REPORTS.unshift({id:"r"+Date.now(),item:id,why:d.querySelector("#rp-why").value,text:d.querySelector("#rp-text").value.trim().slice(0,300),from:ACC_ID,ts:Date.now(),status:"new"}); REPORTS=REPORTS.slice(0,200); LS.set(K_REP,REPORTS); toast("Xabar yuborildi. Rahmat!"); close(); }
+  });
+  window.addEventListener("keydown",key,true); document.body.appendChild(d); d.querySelector("#rp-why").focus();
+}
+function pRepList(){
+  if(!REPORTS.length) return `<p class="muted">Hali xabar yo'q. Foydalanuvchilar xizmatdagi xatolar haqida shu yerga yozadi (xizmat tafsilotida <b>Xato haqida</b> tugmasi).</p>`;
+  return `<div class="pn-bar"><span class="muted">${REPORTS.length} ta xabar · ${repNew()} tasi yangi</span>${pBtn("rep-clear","Hal qilinganlarni tozalash")}</div><ul class="pn-list">${REPORTS.map(x=>{ const it=itemOf(x.item); return `<li class="pn-row${x.status==="new"?" pn-unread":""}"><div class="pn-rm"><b>${it?esc(it.name):"(o'chirilgan)"}</b><small>${esc(x.why)}${x.text?": «"+esc(x.text)+"»":""} · ${esc(accName(x.from))} · ${timeAgo(x.ts)}</small></div><div class="pn-ra">${it?pBtn("rep-open","Saytda ko'rish",`data-id="${esc(x.item)}"`):""}${x.status==="new"?pBtn("rep-ok","Hal qilindi",`data-id="${x.id}"`,"btn-primary"):'<span class="pill open">hal qilindi</span>'}${pBtn("rep-del","O'chirish",`data-id="${x.id}"`,"danger")}</div></li>`; }).join("")}</ul>`;
+}
 applyTheme();
 drawBase(); drawCountry(); renderLayers(); renderOrigin();
 const r0=svg.getBoundingClientRect(); pxW=Math.max(1,r0.width); pxH=Math.max(1,r0.height); sizeReal(); readColors();
