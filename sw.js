@@ -2,7 +2,7 @@
    - ilova fayllari birinchi ochilishda saqlanadi, keyin internetsiz ham ochiladi
    - index.html: avval tarmoq, bo'lmasa saqlangani; qolgan fayllar: avval saqlangani */
 const VER = "ns-v1";
-const SHELL = ["./", "index.html", "css/style.css?v=1.0.34", "favicon.svg", "manifest.webmanifest", "fonts/fonts.css"];
+const SHELL = ["./", "index.html", "css/style.css?v=1.0.35", "favicon.svg", "manifest.webmanifest", "fonts/fonts.css"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VER).then(c => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting()));

@@ -1273,7 +1273,7 @@ function cardHtml(s,d){
   return `<li><button class="card" data-open="${s.id}"><span class="cicon logo">${serviceLogo(s)}</span>
     <span class="cbody"><span class="cname">${esc(s.name)}</span><span class="cmeta">${c.label} · ${esc(s.district)}</span>
     <span class="cline">${ratingHtml(s)}<span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${st.text}</span></span></span>
-    <span class="dist">${fmtKm(d)}</span></button></li>`;
+    <span class="dist">${fmtKm(d)}</span></button><button type="button" class="cmp-add" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}" aria-label="Taqqoslashga qo'shish" title="Taqqoslashga qo'shish">⇄</button></li>`;
 }
 function placeCardHtml(p,d){
   const t=PTYPES[p.t];
@@ -1456,7 +1456,7 @@ function openService(id,opts={}){
     <div class="actions">
       ${mapLinks(s)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button>
       <a class="btn btn-accent" href="${telHref(s.phone)}">${ic("phone")} Qo'ng'iroq qilish</a>
-      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${CMP.includes(s.id)?"Taqqoslashda":"Taqqoslash"}</span></button><button class="btn" data-act="rt" data-id="${s.id}" aria-pressed="${ROUTE.includes(s.id)}">➕ <span class="rt">${ROUTE.includes(s.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${s.id}">⚑ Xato haqida</button>
+      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${cmpLabel(s.id)}</span></button><button class="btn" data-act="rt" data-id="${s.id}" aria-pressed="${ROUTE.includes(s.id)}">➕ <span class="rt">${ROUTE.includes(s.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${s.id}">⚑ Xato haqida</button>
       <button class="btn" data-act="to-review">${ic("star")} Sharh yozish</button>
     </div>
     ${dsec("phone","Aloqa",phoneRow(s.phone)+`<div><dt>${ic("pin")} Manzil</dt><dd>${esc(s.address)}, ${esc(locality(s))}</dd></div>`)}
@@ -2431,44 +2431,56 @@ sg.addEventListener("mousedown",e=>{
 document.addEventListener("click",e=>{ if(!e.target.closest(".search")) sgHide(); });
 /* ===== Taqqoslash: 2-3 xizmatni yonma-yon solishtirish ===== */
 const K_CMP="ns_cmp"; let CMP=LS.get(K_CMP,[]).filter(id=>byId(id)).slice(0,3);
+function cmpLabel(id){ return CMP.includes(id)?"Taqqoslashda ✓":(CMP.length?"Taqqoslashga qo'shish ("+CMP.length+"/3)":"Taqqoslash"); }
 function cmpSave(){
   LS.set(K_CMP,CMP); cmpBar();
-  document.querySelectorAll('[data-act="cmp"]').forEach(b=>{ const on=CMP.includes(b.dataset.id); b.setAttribute("aria-pressed",String(on)); const t=b.querySelector(".ct"); if(t) t.textContent=on?"Taqqoslashda":"Taqqoslash"; });
+  document.querySelectorAll('[data-act="cmp"]').forEach(b=>{ const on=CMP.includes(b.dataset.id); b.setAttribute("aria-pressed",String(on)); const t=b.querySelector(".ct"); if(t) t.textContent=cmpLabel(b.dataset.id); });
 }
 function cmpToggle(id){
-  if(CMP.includes(id)) CMP=CMP.filter(x=>x!==id);
-  else { if(CMP.length>=3){ toast("Eng ko'pi bilan 3 ta xizmatni taqqoslash mumkin"); return; } CMP.push(id); }
+  if(CMP.includes(id)){ CMP=CMP.filter(x=>x!==id); }
+  else { if(CMP.length>=3){ toast("Eng ko'pi bilan 3 ta xizmatni taqqoslash mumkin"); return; } CMP.push(id); if(CMP.length===2) toast("Ikkinchi xizmat qo'shildi: pastdagi Taqqoslash tugmasini bosing"); }
   cmpSave();
 }
 function cmpBar(){
   let b=document.getElementById("cmpBar");
   if(!CMP.length||!SYS.fCompare){ if(b) b.remove(); return; }
   if(!b){ b=document.createElement("div"); b.id="cmpBar"; b.className="cmp-bar"; b.setAttribute("role","region"); b.setAttribute("aria-label","Taqqoslash"); document.body.appendChild(b);
-    b.addEventListener("click",e=>{ const a=e.target.closest("[data-cb]"); if(!a) return; if(a.dataset.cb==="open") cmpOpen(); else if(a.dataset.cb==="clear"){ CMP=[]; cmpSave(); } }); }
-  b.innerHTML=`<span class="cmp-n">${CMP.length}/3</span><span class="cmp-names">${CMP.map(id=>esc((byId(id)||{}).name||"")).join(" · ")}</span><button type="button" class="btn btn-primary sm" data-cb="open"${CMP.length<2?" disabled":""}>Taqqoslash</button><button type="button" class="btn sm" data-cb="clear" aria-label="Tozalash">×</button>`;
+    b.addEventListener("click",e=>{ const a=e.target.closest("[data-cb]"); if(!a) return; const k=a.dataset.cb;
+      if(k==="open") cmpOpen(); else if(k==="clear"){ CMP=[]; cmpSave(); } else if(k==="rm"){ CMP=CMP.filter(x=>x!==a.dataset.id); cmpSave(); } }); }
+  const chips=CMP.map(id=>{ const s=byId(id); return s?`<span class="cmp-chip"><span>${esc(s.name)}</span><button type="button" data-cb="rm" data-id="${id}" aria-label="${esc(s.name)} ni olib tashlash">×</button></span>`:""; }).join("");
+  b.innerHTML=`<span class="cmp-n">${CMP.length}/3</span><span class="cmp-chips">${chips}</span><button type="button" class="btn btn-primary sm" data-cb="open"${CMP.length<2?" disabled":""}>${CMP.length<2?"Yana 1 ta tanlang":"Taqqoslash"}</button><button type="button" class="btn sm" data-cb="clear" aria-label="Hammasini tozalash">×</button>`;
 }
 function cmpOpen(){
+  document.querySelectorAll(".cmp-dlg:not(.rt-dlg)").forEach(x=>x.remove());
   const list=CMP.map(byId).filter(Boolean); if(list.length<2){ toast("Kamida 2 ta xizmat tanlang"); return; }
   const prev=document.activeElement, d=document.createElement("div"); d.className="pn-cf cmp-dlg"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Xizmatlarni taqqoslash");
-  const dist=list.map(s=>gdist(s,state.user)), bestR=Math.max(...list.map(s=>s.count?s.rating:0)), bestD=Math.min(...dist);
+  const dist=list.map(s=>gdist(s,state.user)), avg=list.map(s=>s.prices&&s.prices.length?Math.round(s.prices.reduce((a,p)=>a+p[1],0)/s.prices.length):null);
+  const rated=list.map(s=>s.count?s.rating:0), bestR=Math.max(...rated), bestD=Math.min(...dist), avgs=avg.filter(x=>x!=null), bestP=avgs.length>1?Math.min(...avgs):null;
+  const iR=rated.indexOf(bestR), iD=dist.indexOf(bestD), iP=bestP!=null?avg.indexOf(bestP):-1;
   const rows=[
-    ["Toifa",s=>esc(CATS[s.cat].label)],
-    ["Reyting",s=>s.count?`<b class="${s.rating===bestR?"cmp-best":""}">★ ${fmtR(s.rating)}</b> <small>(${s.count})</small>`:"Yangi"],
+    ["Toifa",s=>esc(CATS[s.cat].label),true],
+    ["Reyting",(s,i)=>s.count?`<b class="${rated[i]===bestR&&bestR>0?"cmp-best":""}">★ ${fmtR(s.rating)}</b> <small>(${s.count})</small>`:"Yangi"],
     ["Masofa",(s,i)=>`<b class="${dist[i]===bestD?"cmp-best":""}">${fmtKm(dist[i])}</b>`],
     ["Holati",s=>{ const st=status(s); return `<span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${esc(st.text)}</span>`; }],
     ["Ish vaqti",s=>esc(hoursText(s))],
+    ["O'rtacha narx",(s,i)=>avg[i]!=null?`<b class="${bestP!=null&&avg[i]===bestP?"cmp-best":""}">${fmtSum(avg[i])}</b>`:"-"],
     ["Tuman",s=>esc(s.district||"-")],
     ["Telefon",s=>esc(s.phone||"-")],
-    ["Narxlar",s=>s.prices&&s.prices.length?s.prices.slice(0,3).map(([n,p])=>`${esc(n)}: <b>${fmtSum(p)}</b>`).join("<br>"):"-"]
+    ["Narxlar",s=>s.prices&&s.prices.length?s.prices.slice(0,3).map(([n,p])=>`${esc(n)}: <b>${fmtSum(p)}</b>`).join("<br>"):"-",true]
   ];
-  d.innerHTML=`<div class="pn-cfbox cmp-box"><button type="button" class="sh-x" data-cm="x" aria-label="Yopish">×</button><h3>Taqqoslash</h3><div class="cmp-scroll"><table class="cmp-t"><thead><tr><th></th>${list.map(s=>`<th><span class="cmp-logo">${serviceLogo(s)}</span><b>${esc(s.name)}</b><span class="cmp-btns"><button type="button" class="btn sm btn-primary" data-cm="open" data-id="${s.id}">Ochish</button><button type="button" class="btn sm" data-cm="rm" data-id="${s.id}" aria-label="Olib tashlash">×</button></span></th>`).join("")}</tr></thead><tbody>${rows.map(([l,f])=>`<tr><th scope="row">${l}</th>${list.map((s,i)=>`<td>${f(s,i)}</td>`).join("")}</tr>`).join("")}</tbody></table></div><p class="sh-hint">Yashil rang: eng yaxshi ko'rsatkich (yuqori reyting, eng yaqin masofa).</p></div>`;
+  const win=[iR>=0&&bestR>0?`★ Eng yuqori reyting: <b>${esc(list[iR].name)}</b>`:"",`⌖ Eng yaqin: <b>${esc(list[iD].name)}</b>`,iP>=0?`₸ Eng arzon (o'rtacha): <b>${esc(list[iP].name)}</b>`:""].filter(Boolean).map(x=>`<li>${x}</li>`).join("");
+  const base=list[0].cat, sim=CMP.length<3?services.filter(s=>s.cat===base&&!CMP.includes(s.id)&&s.count>=5).map(s=>({s,d:gdist(s,state.user)})).sort((a,b)=>b.s.rating-a.s.rating||a.d-b.d).slice(0,3):[];
+  const addRow=sim.length?`<div class="cmp-add-row"><span>Yana qo'shish:</span>${sim.map(({s,d})=>`<button type="button" class="cmp-sug" data-cm="add" data-id="${s.id}">+ ${esc(s.name)} <small>★ ${fmtR(s.rating)} · ${fmtKm(d)}</small></button>`).join("")}</div>`:"";
+  d.innerHTML=`<div class="pn-cfbox cmp-box"><button type="button" class="sh-x" data-cm="x" aria-label="Yopish">×</button><h3>Taqqoslash</h3><ul class="cmp-win">${win}</ul>${addRow}<div class="cmp-scroll"><table class="cmp-t"><thead><tr><th></th>${list.map(s=>`<th><span class="cmp-logo">${serviceLogo(s)}</span><b>${esc(s.name)}</b><span class="cmp-btns"><button type="button" class="btn sm btn-primary" data-cm="open" data-id="${s.id}">Ochish</button><button type="button" class="btn sm" data-cm="route" data-id="${s.id}">Yo'nalish</button><button type="button" class="btn sm" data-cm="rt" data-id="${s.id}" aria-label="Marshrutga qo'shish">➕</button><button type="button" class="btn sm" data-cm="rm" data-id="${s.id}" aria-label="Olib tashlash">×</button></span></th>`).join("")}</tr></thead><tbody>${rows.map(([l,f,skip])=>{ const cells=list.map((s,i)=>f(s,i)); const same=!skip&&cells.every(c=>c.replace(/<[^>]*>/g,"")===cells[0].replace(/<[^>]*>/g,"")); return `<tr${same?' class="cmp-same"':""}><th scope="row">${l}</th>${cells.map(c=>`<td>${c}</td>`).join("")}</tr>`; }).join("")}</tbody></table></div><p class="sh-hint">Yashil: eng yaxshi ko'rsatkich. Xira qatorlar: hamma xizmatda bir xil.</p></div>`;
   const key=e=>{ if(e.key==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); close(); } };
   const close=()=>{ d.remove(); window.removeEventListener("keydown",key,true); if(prev&&prev.focus){ try{ prev.focus({preventScroll:true}); }catch(e){} } };
   d.addEventListener("click",e=>{
     if(e.target===d||e.target.closest('[data-cm="x"]')){ close(); return; }
-    const b=e.target.closest("[data-cm]"); if(!b) return; const id=b.dataset.id;
-    if(b.dataset.cm==="open"){ close(); const s=byId(id); if(s&&s.region&&state.region&&state.region!==s.region){ state.region=s.region; selectRegion(regionById(s.region)); render(); } openService(id); }
-    else if(b.dataset.cm==="rm"){ CMP=CMP.filter(x=>x!==id); cmpSave(); close(); if(CMP.length>=2) cmpOpen(); }
+    const b=e.target.closest("[data-cm]"); if(!b) return; const id=b.dataset.id, k=b.dataset.cm;
+    if(k==="add"){ if(CMP.length<3) CMP.push(id); cmpSave(); close(); cmpOpen(); return; }
+    if(k==="rm"){ CMP=CMP.filter(x=>x!==id); cmpSave(); close(); if(CMP.length>=2) cmpOpen(); return; }
+    if(k==="rt"){ rtToggle(id); toast(ROUTE.includes(id)?"Marshrutga qo'shildi":"Marshrutdan olib tashlandi"); return; }
+    if(k==="open"||k==="route"){ close(); const s=byId(id); if(s&&s.region&&state.region&&state.region!==s.region){ state.region=s.region; selectRegion(regionById(s.region)); render(); } openService(id); if(k==="route"&&s) fitPoints([state.user,s],1.5); }
   });
   window.addEventListener("keydown",key,true); document.body.appendChild(d); d.querySelector('[data-cm="x"]').focus();
 }
