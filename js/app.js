@@ -1254,19 +1254,19 @@ function serviceLogo(s){
   const words=String(s.name||"?").replace(/['’ʻ`]/g,"").split(/[\s\-–]+/).filter(Boolean);
   let brand=(words[0]||"?"); if(brand.length<3&&words[1]) brand+=" "+words[1]; brand=brand.toUpperCase(); if(brand.length>9) brand=brand.slice(0,8)+".";
   let h=2166136261; for(const ch of String(s.name)+"|"+s.id){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); h^=h>>>13; } h>>>=0;
-  const pal=LOGO_COL[h%LOGO_COL.length], shape=LOGO_SHAPES[(h>>>4)%LOGO_SHAPES.length], arts=LOGO_ART[cat], art=arts[(h>>>8)%arts.length];
+  const pal=LOGO_COL[h%LOGO_COL.length], arts=LOGO_ART[cat], art=arts[(h>>>8)%arts.length];
   const mode=(h>>>11)%4, deco=(h>>>14)%3, uid=h+"_"+(++LOGO_N), gid="g"+uid, cid="c"+uid;
   /* rejimlar: 0 - rangli gradient + oq belgi; 1 - och fon + to'q belgi; 2 - qorong'i fon + yorqin belgi; 3 - tekis to'q rang + oq belgi */
   const bgStops=[[pal[0],pal[1]],["#ffffff",pal[0]],["#111827",pal[1]],[pal[1],pal[1]]][mode];
-  const main=[ "#fff", pal[1], pal[0], "#fff" ][mode], acc=[ pal[1], pal[0], "#111827", pal[0] ][mode];
-  const tcol=mode===1?pal[1]:"#fff";
-  const decoSvg=deco===0?"":deco===1?`<circle cx="40" cy="8" r="20" fill="${mode===1?pal[1]:"#fff"}" opacity=".10"/>`:`<path d="M-4 52L52 -4" stroke="${mode===1?pal[1]:"#fff"}" stroke-opacity=".12" stroke-width="10"/>`;
+  const main=["#fff",pal[1],pal[0],"#fff"][mode], acc=[pal[1],pal[0],"#111827",pal[0]][mode], tcol=mode===1?pal[1]:"#fff", dcol=mode===1?pal[1]:"#fff";
+  const decoSvg=deco===0?"":deco===1?`<circle cx="42" cy="6" r="22" fill="${dcol}" opacity=".10"/>`:`<path d="M-4 52L52 -4" stroke="${dcol}" stroke-opacity=".12" stroke-width="10"/>`;
   const glyph=art(acc,uid).replace(/#fff/g,main);
-  const fs=brand.length>7?5.200:brand.length>5?5.900:6.600;
-  return `<svg viewBox="0 0 48 48" role="img" aria-label="${esc(s.name)}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bgStops[0]}"/><stop offset="1" stop-color="${bgStops[1]}"/></linearGradient><clipPath id="${cid}"><path d="${shape}"/></clipPath></defs>
-    <path d="${shape}" fill="url(#${gid})"/><g clip-path="url(#${cid})">${decoSvg}</g>${mode===1?`<path d="${shape}" fill="none" stroke="${pal[1]}" stroke-opacity=".22" stroke-width="1"/>`:""}
-    <svg x="9" y="3.500" width="30" height="30" viewBox="0 0 24 24">${glyph}</svg>
-    <text x="24" y="42.200" text-anchor="middle" font-family="Manrope,Inter,system-ui,sans-serif" font-size="${fs}" font-weight="700" fill="${tcol}" fill-opacity=".92" letter-spacing="1">${esc(brand)}</text></svg>`;
+  /* yozuv doira ichiga to'liq sig'adi: shrift uzunlikka qarab kichrayadi, uzun nomlar kengligi bilan cheklanadi */
+  const L=brand.length, fs=L<=4?7.200:L===5?6.600:L===6?6.100:L===7?5.500:4.900, tl=L>=8?27.500:0;
+  return `<svg viewBox="0 0 48 48" role="img" aria-label="${esc(s.name)}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bgStops[0]}"/><stop offset="1" stop-color="${bgStops[1]}"/></linearGradient><clipPath id="${cid}"><circle cx="24" cy="24" r="24"/></clipPath></defs>
+    <circle cx="24" cy="24" r="24" fill="url(#${gid})"/><g clip-path="url(#${cid})">${decoSvg}</g><circle cx="24" cy="24" r="22.300" fill="none" stroke="${dcol}" stroke-opacity="${mode===1?".22":".28"}" stroke-width=".9"/>
+    <svg x="12" y="5.500" width="24" height="24" viewBox="0 0 24 24">${glyph}</svg>
+    <text x="24" y="38.600" text-anchor="middle" font-family="Manrope,Inter,system-ui,sans-serif" font-size="${fs}" font-weight="800" fill="${tcol}" letter-spacing=".5"${tl?` textLength="${tl}" lengthAdjust="spacingAndGlyphs"`:""}>${esc(brand)}</text></svg>`;
 }
 function cardHtml(s,d){
   const c=CATS[s.cat],st=status(s);
