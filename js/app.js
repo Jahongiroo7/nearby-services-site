@@ -12,7 +12,7 @@ const LS = {
 /* Tizim sozlamalari (admin panelida o'zgartiriladi); standart qiymatlar */
 const SYS_KEY="ns_sys";
 const SYS_DEF={name:"Nearby",sub:"Services · Toshkent",lang:"uz",theme:"auto",sort:"dist",radius:0,openNow:false,
-  fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
+  fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,fCompare:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
 let SYS=Object.assign({},SYS_DEF,LS.get(SYS_KEY,{}));
 /* Akkauntlar (demo): har birining o'z saralanganlari va kelgan ulashishlari bor */
 const ACC_KEY="ns_acc", ACCS_KEY="ns_accounts", K_SH="ns_shares";
@@ -1456,7 +1456,7 @@ function openService(id,opts={}){
     <div class="actions">
       ${mapLinks(s)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button>
       <a class="btn btn-accent" href="${telHref(s.phone)}">${ic("phone")} Qo'ng'iroq qilish</a>
-      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button>
+      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${CMP.includes(s.id)?"Taqqoslashda":"Taqqoslash"}</span></button>
       <button class="btn" data-act="to-review">${ic("star")} Sharh yozish</button>
     </div>
     ${dsec("phone","Aloqa",phoneRow(s.phone)+`<div><dt>${ic("pin")} Manzil</dt><dd>${esc(s.address)}, ${esc(locality(s))}</dd></div>`)}
@@ -1705,6 +1705,7 @@ document.addEventListener("click",e=>{
   else if(a==="to-tashkent"){ showList(); flyTo(state.user.x,state.user.y,14000,800); }
   else if(a==="share") shareThis();
   else if(a==="fav") toggleFav(act.dataset.id);
+  else if(a==="cmp") cmpToggle(act.dataset.id);
   else if(a==="copy") copyText(act.dataset.copy);
   else if(a==="route"){ const t=selectedPoint(); if(t) fitPoints([state.user,t],1.5); }
   else if(a==="to-review"){ const f=$("#revForm"); if(f){f.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>$("#rs5").focus({preventScroll:true}),350);} }
@@ -2216,7 +2217,7 @@ function pAdminSettings(){
 /* ----- tizim sozlamalari ----- */
 function applySys(){
   const R=document.documentElement.classList;
-  R.toggle("sys-no-reviews",!SYS.fReviews); R.toggle("sys-no-fav",!SYS.fFav); R.toggle("sys-no-share",!SYS.fShare); R.toggle("sys-no-gallery",!SYS.fGallery); R.toggle("sys-no-phone",!SYS.fPhone); R.toggle("sys-no-kab",!SYS.fKabinet);
+  R.toggle("sys-no-reviews",!SYS.fReviews); R.toggle("sys-no-fav",!SYS.fFav); R.toggle("sys-no-share",!SYS.fShare); R.toggle("sys-no-gallery",!SYS.fGallery); R.toggle("sys-no-phone",!SYS.fPhone); R.toggle("sys-no-kab",!SYS.fKabinet); R.toggle("sys-no-cmp",!SYS.fCompare);
   if(!SYS.fFav&&state.fav) state.fav=false;
   const nm=String(SYS.name||"").trim()||"Nearby", b=document.querySelector(".brand b"); if(b) b.textContent=nm;
   const sm=document.querySelector(".brand small"); if(sm&&SYS.sub) sm.textContent=SYS.sub;
@@ -2240,7 +2241,7 @@ function pSysForm(){
       <div class="pn-2"><label>Tartiblash${sel("sys-sort",[["dist","Eng yaqini"],["rating","Reytingi yuqori"],["reviews","Ko'p sharhlangan"]],SYS.sort)}</label><label>Masofa${sel("sys-radius",[[0,"Hammasi"],[1,"1 km"],[5,"5 km"],[10,"10 km"]],SYS.radius)}</label></div>
       ${sw("sys-open","Faqat hozir ochiq xizmatlar",SYS.openNow,"Sayt ochilganda shu filtr yoqilgan bo'ladi")}</section>
     <section class="pn-sec"><h4><i>3</i> Imkoniyatlar</h4>
-      ${sw("sys-reviews","Sharh yozish",SYS.fReviews,"O'chirilsa, yangi sharh yozib bo'lmaydi")}${sw("sys-fav","Saralanganlar",SYS.fFav,"♥ tugmasi va filtr")}${sw("sys-share","Ulashish tugmasi",SYS.fShare)}${sw("sys-gallery","Rasmlar galereyasi",SYS.fGallery)}${sw("sys-phone","\"Namuna raqam\" izohi",SYS.fPhone,"Telefon raqami yonidagi eslatma")}${sw("sys-kab","Kabinet tugmasi",SYS.fKabinet,"Tepadagi foydalanuvchi paneli")}</section>
+      ${sw("sys-reviews","Sharh yozish",SYS.fReviews,"O'chirilsa, yangi sharh yozib bo'lmaydi")}${sw("sys-fav","Saralanganlar",SYS.fFav,"♥ tugmasi va filtr")}${sw("sys-share","Ulashish tugmasi",SYS.fShare)}${sw("sys-gallery","Rasmlar galereyasi",SYS.fGallery)}${sw("sys-phone","\"Namuna raqam\" izohi",SYS.fPhone,"Telefon raqami yonidagi eslatma")}${sw("sys-kab","Kabinet tugmasi",SYS.fKabinet,"Tepadagi foydalanuvchi paneli")}${sw("sys-cmp","Taqqoslash",SYS.fCompare,"Xizmatlarni yonma-yon solishtirish")}</section>
     <section class="pn-sec"><h4><i>4</i> E'lon</h4>
       ${sw("sys-ann","Saytning tepasida e'lon ko'rsatish",SYS.annOn)}
       <label>E'lon matni<textarea class="input" id="sys-anntext" rows="2" maxlength="200" placeholder="Masalan, Bayram kunlari ish vaqti o'zgargan">${esc(SYS.annText||"")}</textarea></label>
@@ -2326,7 +2327,7 @@ function pSubmit(e){
     const g=id=>PN.querySelector("#"+id), name=g("sys-name").value.trim();
     if(name.length<2) return fail("Sayt nomi kamida 2 belgi bo'lsin");
     SYS=Object.assign({},SYS_DEF,{name,sub:g("sys-sub").value.trim(),lang:g("sys-lang").value,theme:g("sys-theme").value,sort:g("sys-sort").value,radius:+g("sys-radius").value,openNow:g("sys-open").checked,
-      fReviews:g("sys-reviews").checked,fFav:g("sys-fav").checked,fShare:g("sys-share").checked,fGallery:g("sys-gallery").checked,fPhone:g("sys-phone").checked,fKabinet:g("sys-kab").checked,
+      fReviews:g("sys-reviews").checked,fFav:g("sys-fav").checked,fShare:g("sys-share").checked,fGallery:g("sys-gallery").checked,fPhone:g("sys-phone").checked,fKabinet:g("sys-kab").checked,fCompare:g("sys-cmp").checked,
       annOn:g("sys-ann").checked,annText:g("sys-anntext").value.trim(),annKind:g("sys-annkind").value,maint:g("sys-maint").checked,maintText:g("sys-mainttext").value.trim()||SYS_DEF.maintText});
     if(SYS.annOn&&!SYS.annText) return fail("E'lon yoqilgan, lekin matni bo'sh");
     LS.set(SYS_KEY,SYS); applySys(); toast("Sozlamalar saqlandi"); pRenderBody(); return;
@@ -2417,6 +2418,50 @@ sg.addEventListener("mousedown",e=>{
   const it=e.target.closest(".sg-i"); if(it) sgPick(+it.dataset.i);
 });
 document.addEventListener("click",e=>{ if(!e.target.closest(".search")) sgHide(); });
+/* ===== Taqqoslash: 2-3 xizmatni yonma-yon solishtirish ===== */
+const K_CMP="ns_cmp"; let CMP=LS.get(K_CMP,[]).filter(id=>byId(id)).slice(0,3);
+function cmpSave(){
+  LS.set(K_CMP,CMP); cmpBar();
+  document.querySelectorAll('[data-act="cmp"]').forEach(b=>{ const on=CMP.includes(b.dataset.id); b.setAttribute("aria-pressed",String(on)); const t=b.querySelector(".ct"); if(t) t.textContent=on?"Taqqoslashda":"Taqqoslash"; });
+}
+function cmpToggle(id){
+  if(CMP.includes(id)) CMP=CMP.filter(x=>x!==id);
+  else { if(CMP.length>=3){ toast("Eng ko'pi bilan 3 ta xizmatni taqqoslash mumkin"); return; } CMP.push(id); }
+  cmpSave();
+}
+function cmpBar(){
+  let b=document.getElementById("cmpBar");
+  if(!CMP.length||!SYS.fCompare){ if(b) b.remove(); return; }
+  if(!b){ b=document.createElement("div"); b.id="cmpBar"; b.className="cmp-bar"; b.setAttribute("role","region"); b.setAttribute("aria-label","Taqqoslash"); document.body.appendChild(b);
+    b.addEventListener("click",e=>{ const a=e.target.closest("[data-cb]"); if(!a) return; if(a.dataset.cb==="open") cmpOpen(); else if(a.dataset.cb==="clear"){ CMP=[]; cmpSave(); } }); }
+  b.innerHTML=`<span class="cmp-n">${CMP.length}/3</span><span class="cmp-names">${CMP.map(id=>esc((byId(id)||{}).name||"")).join(" · ")}</span><button type="button" class="btn btn-primary sm" data-cb="open"${CMP.length<2?" disabled":""}>Taqqoslash</button><button type="button" class="btn sm" data-cb="clear" aria-label="Tozalash">×</button>`;
+}
+function cmpOpen(){
+  const list=CMP.map(byId).filter(Boolean); if(list.length<2){ toast("Kamida 2 ta xizmat tanlang"); return; }
+  const prev=document.activeElement, d=document.createElement("div"); d.className="pn-cf cmp-dlg"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-label","Xizmatlarni taqqoslash");
+  const dist=list.map(s=>gdist(s,state.user)), bestR=Math.max(...list.map(s=>s.count?s.rating:0)), bestD=Math.min(...dist);
+  const rows=[
+    ["Toifa",s=>esc(CATS[s.cat].label)],
+    ["Reyting",s=>s.count?`<b class="${s.rating===bestR?"cmp-best":""}">★ ${fmtR(s.rating)}</b> <small>(${s.count})</small>`:"Yangi"],
+    ["Masofa",(s,i)=>`<b class="${dist[i]===bestD?"cmp-best":""}">${fmtKm(dist[i])}</b>`],
+    ["Holati",s=>{ const st=status(s); return `<span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${esc(st.text)}</span>`; }],
+    ["Ish vaqti",s=>esc(hoursText(s))],
+    ["Tuman",s=>esc(s.district||"-")],
+    ["Telefon",s=>esc(s.phone||"-")],
+    ["Narxlar",s=>s.prices&&s.prices.length?s.prices.slice(0,3).map(([n,p])=>`${esc(n)}: <b>${fmtSum(p)}</b>`).join("<br>"):"-"]
+  ];
+  d.innerHTML=`<div class="pn-cfbox cmp-box"><button type="button" class="sh-x" data-cm="x" aria-label="Yopish">×</button><h3>Taqqoslash</h3><div class="cmp-scroll"><table class="cmp-t"><thead><tr><th></th>${list.map(s=>`<th><span class="cmp-logo">${serviceLogo(s)}</span><b>${esc(s.name)}</b><span class="cmp-btns"><button type="button" class="btn sm btn-primary" data-cm="open" data-id="${s.id}">Ochish</button><button type="button" class="btn sm" data-cm="rm" data-id="${s.id}" aria-label="Olib tashlash">×</button></span></th>`).join("")}</tr></thead><tbody>${rows.map(([l,f])=>`<tr><th scope="row">${l}</th>${list.map((s,i)=>`<td>${f(s,i)}</td>`).join("")}</tr>`).join("")}</tbody></table></div><p class="sh-hint">Yashil rang: eng yaxshi ko'rsatkich (yuqori reyting, eng yaqin masofa).</p></div>`;
+  const key=e=>{ if(e.key==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); close(); } };
+  const close=()=>{ d.remove(); window.removeEventListener("keydown",key,true); if(prev&&prev.focus){ try{ prev.focus({preventScroll:true}); }catch(e){} } };
+  d.addEventListener("click",e=>{
+    if(e.target===d||e.target.closest('[data-cm="x"]')){ close(); return; }
+    const b=e.target.closest("[data-cm]"); if(!b) return; const id=b.dataset.id;
+    if(b.dataset.cm==="open"){ close(); const s=byId(id); if(s&&s.region&&state.region&&state.region!==s.region){ state.region=s.region; selectRegion(regionById(s.region)); render(); } openService(id); }
+    else if(b.dataset.cm==="rm"){ CMP=CMP.filter(x=>x!==id); cmpSave(); close(); if(CMP.length>=2) cmpOpen(); }
+  });
+  window.addEventListener("keydown",key,true); document.body.appendChild(d); d.querySelector('[data-cm="x"]').focus();
+}
+cmpBar();
 applyTheme();
 drawBase(); drawCountry(); renderLayers(); renderOrigin();
 const r0=svg.getBoundingClientRect(); pxW=Math.max(1,r0.width); pxH=Math.max(1,r0.height); sizeReal(); readColors();

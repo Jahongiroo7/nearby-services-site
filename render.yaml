@@ -26,3 +26,6 @@ services:
       - path: /css/*
         name: Cache-Control
         value: public, max-age=604800
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache

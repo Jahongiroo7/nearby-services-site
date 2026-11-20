@@ -44,6 +44,10 @@ Oddiy HTML, CSS va JavaScript. Backend, o'rnatish va build kerak emas: faqat sta
     _headers, vercel.json, .htaccess, server/   hosting sozlamalari
     video/                  tushuntiruvchi video (MP4), subtitr (SRT), interaktiv HTML
 
+## Internetsiz ishlash va telefonga o'rnatish
+
+Sayt birinchi ochilgandan keyin (HTTPS orqali) internetsiz ham ochiladi: `sw.js` ilova fayllarini va xarita ma'lumotlarini brauzerda saqlaydi. Telefonda brauzer menyusidan "Bosh ekranga qo'shish" orqali ilova kabi o'rnatiladi. Fayllarni yangilasangiz, `sw.js` ichidagi `VER` qiymatini ham oshiring (masalan `ns-v2`), aks holda eski nusxa ko'rinishi mumkin.
+
 ## Kodni o'zgartirsangiz
 
 `index.html` ichida fayllar `?v=1.0.0` bilan ulangan. `css/` yoki `js/` fayllarini o'zgartirgach, `index.html` da shu raqamni oshiring (masalan `?v=1.0.1`), aks holda foydalanuvchilar eski keshni ko'radi.
