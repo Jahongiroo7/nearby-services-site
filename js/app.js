@@ -1194,7 +1194,7 @@ const LOGO_PAL=[["#1951fc","#6db4ff"],["#7c3aed","#c4a7ff"],["#0d9488","#5eead4"
 const logoCache=new Map();
 let LOGO_N=0;
 const CAT_PAL={
-  barber:[["#4338ca","#818cf8"],["#1e1b4b","#6366f1"],["#5b21b6","#a78bfa"],["#0f172a","#6366f1"]],
+  barber:[["#3730a3","#818cf8"],["#1e1b4b","#6366f1"],["#5b21b6","#a78bfa"],["#0f172a","#6366f1"]],
   shop:[["#be185d","#f472b6"],["#9d174d","#fb7185"],["#7e22ce","#f0abfc"],["#c2410c","#fb923c"]],
   food:[["#c2410c","#fb923c"],["#b91c1c","#f87171"],["#a16207","#fcd34d"],["#9a3412","#fdba74"]],
   pharm:[["#15803d","#4ade80"],["#047857","#34d399"],["#0f766e","#5eead4"],["#166534","#86efac"]],
@@ -1207,19 +1207,28 @@ const LOGO_SHAPES=[
   'M6 3h36a2 2 0 0 1 2 2v21c0 11-9 17-20 21C13 43 4 37 4 26V5a2 2 0 0 1 2-2z',
   'M24 1l20 11.5v23L24 47 4 35.500v-23z'
 ];
+/* Har toifa uchun batafsil chizilgan belgi (24x24 maydonda); A - qo'shimcha rang, u - noyob identifikator */
+const LOGO_ART={
+  barber:(A,u)=>`<defs><clipPath id="p${u}"><rect x="8" y="5.200" width="8" height="13.600" rx="1"/></clipPath></defs><rect x="7.500" y="2.600" width="9" height="3" rx="1.500" fill="#fff"/><rect x="7.500" y="18.400" width="9" height="3" rx="1.500" fill="#fff"/><rect x="8" y="5.200" width="8" height="13.600" fill="#fff"/><g clip-path="url(#p${u})"><path d="M7 5l10-3.500v4L7 9.500z" fill="#ef4444"/><path d="M7 11.500l10-3.500v4L7 15.500z" fill="#ef4444"/><path d="M7 8.200l10-3.500v3.800L7 12z" fill="#2563eb"/><path d="M7 14.700l10-3.500V15L7 18.700z" fill="#2563eb"/><path d="M7 20l10-3.500V20z" fill="#ef4444"/></g><rect x="8" y="5.200" width="8" height="13.600" rx="1" fill="none" stroke="${A}" stroke-opacity=".5" stroke-width=".7"/>`,
+  shop:(A)=>`<path d="M4.500 8.500h15l-1.200 12.300a1 1 0 0 1-1 .9H6.700a1 1 0 0 1-1-.9z" fill="#fff"/><path d="M8.600 8.500V7a3.400 3.400 0 0 1 6.800 0v1.500" fill="none" stroke="#fff" stroke-width="1.900" stroke-linecap="round"/><path d="M12 18.600l-2.900-2.700a1.800 1.800 0 0 1 2.900-2.100 1.800 1.800 0 0 1 2.900 2.100z" fill="${A}"/>`,
+  food:(A)=>`<circle cx="12" cy="5.600" r="1.600" fill="#fff"/><path d="M3.600 16.600a8.400 8.400 0 0 1 16.800 0z" fill="#fff"/><rect x="2" y="17.500" width="20" height="2.300" rx="1.150" fill="#fff"/><path d="M7.200 14.600a5 5 0 0 1 3.300-3.300" fill="none" stroke="${A}" stroke-width="1.500" stroke-linecap="round"/>`,
+  pharm:(A)=>`<path d="M3.500 12.500h17a8.500 8.500 0 0 1-17 0z" fill="#fff"/><rect x="2.500" y="11.300" width="19" height="2" rx="1" fill="#fff"/><path d="M15.600 2.700l2.900 2.900-6 6.500-2.900-2.900z" fill="#fff"/><path d="M10.900 14.100h2.200v1.900h1.900v2.200h-1.900v1.900h-2.200v-1.900H9v-2.200h1.900z" fill="${A}"/>`,
+  auto:(A)=>`<path d="M2.600 15.600v-3.400l2.100-4.700a2.200 2.200 0 0 1 2-1.300h10.600a2.200 2.200 0 0 1 2 1.300l2.100 4.700v3.400a1.100 1.100 0 0 1-1.100 1.100H3.700a1.100 1.100 0 0 1-1.100-1.100z" fill="#fff"/><path d="M6 8.200h12l1.300 3.200H4.700z" fill="${A}"/><circle cx="7.200" cy="17" r="2.500" fill="#fff" stroke="${A}" stroke-width="1.300"/><circle cx="16.800" cy="17" r="2.500" fill="#fff" stroke="${A}" stroke-width="1.300"/>`,
+  repair:(A)=>`<g transform="rotate(45 12 12)"><rect x="10.800" y="9" width="2.400" height="12.500" rx="1.200" fill="#fff"/><path d="M8.400 2.500h2.300v3.600h2.600V2.500h2.300v5.200a3.600 3.600 0 0 1-7.200 0z" fill="#fff"/></g><g transform="rotate(-45 12 12)"><rect x="11.100" y="2.500" width="1.800" height="10" rx=".6" fill="#fff"/><rect x="9.800" y="11.500" width="4.400" height="9.500" rx="2" fill="${A}" stroke="#fff" stroke-width="1"/></g>`
+};
 function serviceLogo(s){
   if(s.logo) return `<img class="logoimg" src="${esc(s.logo)}" alt="${esc(s.name)}" loading="lazy" decoding="async">`;
-  let svg;
+  const cat=CATS[s.cat]?s.cat:"barber";
   const words=String(s.name||"?").replace(/['’ʻ`]/g,"").split(/[\s\-–]+/).filter(Boolean);
-  const ini=((words.length>1?words[0][0]+words[1][0]:(words[0]||"?").slice(0,2))).toUpperCase();
+  let brand=(words[0]||"?"); if(brand.length<3&&words[1]) brand+=" "+words[1]; brand=brand.toUpperCase(); if(brand.length>9) brand=brand.slice(0,8)+"."; 
   let h=2166136261; for(const ch of String(s.name)){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } h>>>=0;
-  const pals=CAT_PAL[s.cat]||CAT_PAL.barber, pal=pals[h%pals.length], v=(h>>>5)%4, shape=LOGO_SHAPES[v], uid=h+"_"+(++LOGO_N), gid="g"+uid, cid="c"+uid;
-  const shield=v===2, pw=shield?24:30;
-  svg=`<svg viewBox="0 0 48 48" role="img" aria-label="${esc(s.name)}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${pal[1]}"/><stop offset="1" stop-color="${pal[0]}"/></linearGradient><clipPath id="${cid}"><path d="${shape}"/></clipPath></defs>
-    <path d="${shape}" fill="url(#${gid})"/><g clip-path="url(#${cid})"><ellipse cx="14" cy="6" rx="20" ry="11" fill="#fff" opacity=".14"/>${v===1?'<circle cx="24" cy="24" r="20.5" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="1.5"/>':""}${v===3?'<path d="M-4 40L40 -4v8L4 44z" fill="#fff" opacity=".1"/>':""}</g>
-    <svg x="12" y="${shield?4.5:5}" width="24" height="24" style="color:#fff"><use href="#ic-${CATS[s.cat]?s.cat:"barber"}"/></svg>
-    <rect x="${24-pw/2}" y="33" width="${pw}" height="10" rx="5" fill="#fff" fill-opacity=".96"/><text x="24" y="40.4" text-anchor="middle" font-family="Manrope,Inter,system-ui,sans-serif" font-size="7.600" font-weight="800" fill="${pal[0]}" letter-spacing=".3">${esc(ini)}</text></svg>`;
-  return svg;
+  const pals=CAT_PAL[cat], pal=pals[h%pals.length], v=(h>>>5)%4, shape=LOGO_SHAPES[v], uid=h+"_"+(++LOGO_N), gid="g"+uid, cid="c"+uid, shield=v===2;
+  const font=(h>>>9)%3===0?"Georgia,'Times New Roman',serif":"Manrope,Inter,system-ui,sans-serif", fs=brand.length>7?5.400:brand.length>5?6.200:7;
+  return `<svg viewBox="0 0 48 48" role="img" aria-label="${esc(s.name)}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${pal[1]}"/><stop offset="1" stop-color="${pal[0]}"/></linearGradient><clipPath id="${cid}"><path d="${shape}"/></clipPath></defs>
+    <path d="${shape}" fill="url(#${gid})"/><g clip-path="url(#${cid})"><ellipse cx="14" cy="5" rx="22" ry="12" fill="#fff" opacity=".16"/><rect x="0" y="33" width="48" height="16" fill="#000" opacity=".26"/>${v===1?'<circle cx="24" cy="24" r="20.5" fill="none" stroke="#fff" stroke-opacity=".34" stroke-width="1.2"/>':""}${v===3?'<path d="M-4 40L40 -4v8L4 44z" fill="#fff" opacity=".09"/>':""}</g>
+    <path d="${shape}" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="1"/>
+    <svg x="${shield?11:10}" y="${shield?2.500:2.800}" width="${shield?26:28}" height="${shield?26:28}" viewBox="0 0 24 24">${LOGO_ART[cat](pal[0],uid)}</svg>
+    <text x="24" y="${shield?39.800:40.600}" text-anchor="middle" font-family="${font}" font-size="${fs}" font-weight="800" fill="#fff" letter-spacing=".5">${esc(brand)}</text></svg>`;
 }
 function cardHtml(s,d){
   const c=CATS[s.cat],st=status(s);
