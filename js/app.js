@@ -1162,14 +1162,25 @@ function originHelp(msg){
 function geolocate(){
   if(!navigator.geolocation){ originHelp("Bu brauzerda joylashuv aniqlanmaydi. Koordinatani qo'lda kiriting."); return; }
   toast("Joylashuv aniqlanmoqda…");
-  navigator.geolocation.getCurrentPosition(pos=>{
+  const ok=pos=>{
     const c=pos.coords, w=ll2w(c.longitude,c.latitude);
     setUser(w.x,w.y,"Mening joylashuvim",c.accuracy);
     if(!inUzb(w)) toast("Siz O'zbekiston tashqarisidasiz: masofalar baribir shu nuqtadan hisoblanadi");
     flyTo(w.x,w.y,Math.min(view.w,7000));
-  },err=>originHelp(err&&err.code===1?"Brauzer bu sahifaga joylashuvni bermadi (artifact ichida GPS bloklangan). Koordinatani qo'lda kiriting: telefon xaritasida joyni bosib turing, koordinata chiqadi.":"Joylashuvni aniqlab bo'lmadi. Koordinatani qo'lda kiriting."),
-  {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  };
+  const fail=err=>{
+    const code=err&&err.code;
+    if(code===1) originHelp("Joylashuvga ruxsat berilmagan. Manzil satridagi qulf belgisini bosing, \"Joylashuv\" ni \"Ruxsat\" qiling va sahifani yangilang. Yoki koordinatani qo'lda kiriting.");
+    else if(code===2) originHelp("Qurilma joylashuvni topa olmadi. Qurilmada joylashuv xizmati (GPS/Location Services) yoqilganini tekshiring yoki koordinatani qo'lda kiriting.");
+    else originHelp("Joylashuvni aniqlash uzoq cho'zildi. Qayta urinib ko'ring yoki koordinatani qo'lda kiriting.");
+  };
+  // avval aniq (GPS), bo'lmasa kompyuterlarda ishlaydigan oddiy usul (Wi-Fi/IP)
+  navigator.geolocation.getCurrentPosition(ok,err=>{
+    if(err&&err.code===1) return fail(err);
+    navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:false,timeout:20000,maximumAge:300000});
+  },{enableHighAccuracy:true,timeout:8000,maximumAge:60000});
 }
+
 function selectedPoint(){
   if(!state.sel)return null;
   if(state.sel.kind==="service")return byId(state.sel.id);
