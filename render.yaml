@@ -26,6 +26,9 @@ services:
       - path: /css/*
         name: Cache-Control
         value: public, max-age=604800
+      - path: /admin.html
+        name: X-Robots-Tag
+        value: noindex, nofollow
       - path: /sw.js
         name: Cache-Control
         value: no-cache

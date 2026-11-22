@@ -2107,6 +2107,7 @@ function pOpen(kind,fromHash){
   const x=PN.querySelector(".pn-x"); if(x) x.focus({preventScroll:true});
 }
 function pClose(fromHash){
+  if(window.NS_ADMIN_ONLY&&PKIND==="admin") return;
   if(!PN||PN.hidden) return; PN.hidden=true; document.documentElement.classList.remove("pn-open");
   if(!fromHash&&/^#(kabinet|admin)$/.test(location.hash)){ try{ history.back(); }catch(e){} }
 }
@@ -2642,6 +2643,7 @@ if("ResizeObserver" in window) new ResizeObserver(measure).observe(svg); else ad
 initI18n();
 routeFromHash();
 pRoute();
+if(window.NS_ADMIN_ONLY){ document.documentElement.classList.add("admin-only"); pOpen("admin",true); }
 setTimeout(()=>idle(()=>{ try{
   startHw();   // shaharlararo yo'l grafi
   // foydalanuvchi turgan hududning ko'cha grafi (birinchi marshrut qotmasin)

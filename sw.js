@@ -1,8 +1,8 @@
 /* Nearby Services: internetsiz ishlash (service worker)
    - ilova fayllari birinchi ochilishda saqlanadi, keyin internetsiz ham ochiladi
    - index.html: avval tarmoq, bo'lmasa saqlangani; qolgan fayllar: avval saqlangani */
-const VER = "ns-v1";
-const SHELL = ["./", "index.html", "css/style.css?v=1.0.37", "favicon.svg", "manifest.webmanifest", "fonts/fonts.css"];
+const VER = "ns-v2";
+const SHELL = ["./", "index.html", "css/style.css?v=1.0.38", "favicon.svg", "manifest.webmanifest", "fonts/fonts.css"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VER).then(c => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting()));
@@ -17,8 +17,10 @@ self.addEventListener("fetch", e => {
   if (url.origin !== location.origin) return;           // tashqi manzillar (Google Maps va b.) tegilmaydi
   if (/\/video\//.test(url.pathname)) return;           // katta video saqlanmaydi
   if (req.mode === "navigate" || url.pathname.endsWith("/index.html") || url.pathname.endsWith("/")) {
-    e.respondWith(fetch(req).then(r => { const copy = r.clone(); caches.open(VER).then(c => c.put("index.html", copy)); return r; })
-      .catch(() => caches.match("index.html").then(r => r || caches.match("./"))));
+    const key = /admin(\.html)?$/.test(url.pathname) ? "admin.html" : "index.html";
+    e.respondWith(fetch(req).then(r => { if (r.ok) { const copy = r.clone(); caches.open(VER).then(c => c.put(key, copy)); } return r; })
+      .catch(() => caches.match(key).then(r => r || caches.match("index.html") || caches.match("./"))));
+
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => {

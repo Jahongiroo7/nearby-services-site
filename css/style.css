@@ -997,3 +997,9 @@ li:has(>.cmp-add){position:relative}
 .cmp-sug:hover{background:var(--surface-2)}
 .cmp-same th,.cmp-same td{opacity:.55}
 .cmp-btns{flex-wrap:wrap}
+
+/* ===== Alohida admin sahifasi ===== */
+html.admin-only .pn-x{display:none}
+html.admin-only .pnl{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
+html.admin-only .pn-box{width:min(1100px,100%);margin:0 auto;border-radius:0;border:0;box-shadow:none}
+@media (min-width:900px){html.admin-only .pn-box{margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}}

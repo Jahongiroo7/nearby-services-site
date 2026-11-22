@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nearby Admin</title>
+<meta name="robots" content="noindex"><meta name="description" content="Yaqin atrofdagi xizmatlar va jamoat joylari xaritasi: Toshkent va butun O'zbekiston bo'yicha 1211 ta xizmat. Toifa, masofa va reyting bo'yicha qidiring.">
+<meta name="theme-color" content="#1951fc">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Nearby Services">
+<meta property="og:description" content="Yaqin atrofdagi xizmatlar va jamoat joylari bitta xaritada.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="preload" href="fonts/inter-latin-3.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="css/style.css?v=1.0.38">
+</head>
+<body>
+<noscript><p style="padding:24px;font:16px system-ui">Bu sayt ishlashi uchun JavaScript yoqilgan bo'lishi kerak.</p></noscript>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- Xizmat belgilari: to'ldirilgan siluetlar (Material Icons uslubida) — kichik o'lchamda ham real narsaga o'xshab tanilsin -->
+  <symbol id="ic-barber" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3z"/></symbol>
+  <symbol id="ic-shop" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></symbol>
+  <symbol id="ic-food" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></symbol>
+  <symbol id="ic-pharm" viewBox="0 0 24 24"><path d="M9 3.5h6v5.5h5.5v6H15v5.5H9V15H3.5V9H9z" fill="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-auto" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></symbol>
+  <symbol id="ic-repair" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></symbol>
+  <symbol id="ic-gov" viewBox="0 0 24 24"><path d="M5 21V3.5"/><path d="M5 4h12l-2.5 4L17 12H5"/></symbol>
+  <symbol id="ic-museum" viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5z"/><path d="M5.5 10v8M10 10v8M14 10v8M18.5 10v8M3 20.5h18"/></symbol>
+  <symbol id="ic-park" viewBox="0 0 24 24"><path d="M12 21v-6"/><path d="M12 3a5 5 0 0 0-5 5 4 4 0 0 0 .5 7h9a4 4 0 0 0 .5-7 5 5 0 0 0-5-5z"/></symbol>
+  <symbol id="ic-tour" viewBox="0 0 24 24"><path d="m12 3.2 2.6 5.5 6 .8-4.4 4.1 1.1 5.9L12 16.6l-5.3 2.9 1.1-5.9-4.4-4.1 6-.8z"/></symbol>
+  <symbol id="ic-school" viewBox="0 0 24 24"><path d="M2 9.5 12 4.5l10 5-10 5z"/><path d="M6 11.5v5c3.5 2.4 8.5 2.4 12 0v-5M22 9.5v5"/></symbol>
+  <symbol id="ic-kinder" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M12 14.5 11 16.5h2l-1-2M12 16.5c0 2-1.8 2.7-1 4.5"/></symbol>
+  <symbol id="ic-airport" viewBox="0 0 24 24"><path d="M21 15.5v-2l-8-5V4a1.5 1.5 0 0 0-3 0v4.5l-8 5v2l8-2.5v4.5l-2 1.5v1.5l3.5-1 3.5 1V19l-2-1.5V13z" transform="translate(.5 0)"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="ic-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="ic-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="ic-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="ic-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+  <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="ic-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><path d="m12 3.2 2.6 5.5 6 .8-4.4 4.1 1.1 5.9L12 16.6l-5.3 2.9 1.1-5.9-4.4-4.1 6-.8z"/></symbol>
+  <symbol id="ic-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="ic-map" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></symbol>
+  <symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="ic-moon" viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"/></symbol>
+  <symbol id="ic-theme-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></symbol>
+  <symbol id="ic-building" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="brand">
+    <span class="mk"><svg class="i"><use href="#ic-pin"/></svg></span>
+    <span><b>Nearby</b><small>Services · Toshkent</small></span>
+  </div>
+  <div class="search">
+    <svg class="i"><use href="#ic-search"/></svg>
+    <input id="q" type="search" autocomplete="off" placeholder="Sartaroshxona, dorixona, muzey yoki tuman nomi…" aria-label="Xizmat qidirish">
+  </div>
+  <span class="spacer"></span>
+  <div class="lang" id="langBox">
+    <button type="button" class="langbtn" id="langBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Til / Language"><span class="lc" id="langCode">UZ</span><span class="lname" id="langName">O'zbekcha</span><svg class="i" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+    <ul class="langmenu" id="langMenu" role="listbox" aria-label="Til / Language" hidden></ul>
+    <select id="langSel" class="langsel" tabindex="-1" aria-hidden="true" aria-label="Til / Language"><option value="uz">O'zbekcha</option><option value="en">English</option><option value="ru">Русский</option><option value="fr">Français</option><option value="de">Deutsch</option></select>
+  </div>
+  <button class="btn" id="themeBtn" type="button" aria-label="Ko'rinish rejimi"></button>
+</header>
+
+<main class="app">
+  <aside class="panel" id="panel">
+    <section class="view" id="viewList">
+      <div id="originBar"></div>
+      <div class="scope sw" id="panelScope" data-pos="0" role="group" aria-label="Ko'rinish hududi">
+      <i class="sthumb" aria-hidden="true"></i>
+      <button type="button" data-act="scope-local" aria-pressed="true"><svg class="i"><use href="#ic-pin"/></svg><span class="sl"><b>Viloyatni ko'rish</b></span></button>
+      <button type="button" data-act="scope-country" aria-pressed="false"><svg class="i"><use href="#ic-map"/></svg><span class="sl"><b>Davlatni ko'rish</b></span></button></div>
+      <div id="regionBar"></div>
+      <div class="cats" id="cats" aria-label="Xizmat turlari"></div>
+      <div class="filters">
+        <div class="fstack"><span class="flabel">Masofa</span>
+          <div class="seg" id="segRadius">
+            <button data-v="0" aria-pressed="true">Hammasi</button><button data-v="1" aria-pressed="false">1 km</button><button data-v="5" aria-pressed="false">5 km</button><button data-v="10" aria-pressed="false">10 km</button>
+          </div></div>
+        <div class="fstack"><span class="flabel">Reyting</span>
+          <div class="seg" id="segRating">
+            <button data-v="0" aria-pressed="true">Hammasi</button><button data-v="4" aria-pressed="false">★ 4,0+</button><button data-v="4.5" aria-pressed="false">★ 4,5+</button>
+          </div></div>
+        <div class="frow">
+          <label class="switch"><input type="checkbox" id="openNow"> Hozir ochiq</label>
+          <label class="selwrap" for="sort">Saralash
+            <select id="sort" class="csel"><option value="dist">Eng yaqin</option><option value="rating">Reytingi yuqori</option><option value="reviews">Ko'p sharhlangan</option></select>
+          </label>
+        </div>
+      </div>
+      <div id="placeHits"></div>
+      <div class="rhead" aria-live="polite"><b id="rcount">—</b><span id="rsub"></span></div>
+      <ul class="results" id="results"></ul>
+      <p class="note">Bu interaktiv prototip: xizmatlar, telefon raqamlar va sharhlar namunaviy. Xarita ma'lumoti OpenStreetMap'dan: shahar ko'chalari haqiqiy, ko'p joylarda binolar ko'chalar bo'ylab o'zimiz joylashtirilgan. Xaritaning istalgan joyini bosing — o'sha nuqta haqida ma'lumot chiqadi.</p>
+    </section>
+    <section class="view" id="viewDetail" hidden></section>
+  </aside>
+
+  <section class="mapwrap" id="mapwrap">
+    <svg id="mapBase" aria-hidden="true">
+      <defs id="mapDefs"></defs>
+      <g id="gBase"></g>
+      <g id="gRoadLabels" class="roadlbls"></g>
+    </svg>
+    <canvas id="mapReal" aria-hidden="true"></canvas>
+    <svg id="map" role="img" aria-label="O'zbekiston xaritasi: Toshkent markazi OpenStreetMap ma'lumotlari bilan, xizmatlar va jamoat joylari">
+      <g id="gDistricts"></g>
+      <g id="gRadius"></g>
+      <g id="gRoute"></g>
+      <g id="gPlaces"></g>
+      <g id="gServices"></g>
+      <g id="gCountry"></g>
+      <g id="gUser"></g>
+      <g id="gMark"></g>
+    </svg>
+    <div class="layers" id="layers" aria-label="Xarita qatlamlari"></div>
+    <div class="zoom">
+      <button data-act="zoom-in" aria-label="Yaqinlashtirish"><svg class="i"><use href="#ic-plus"/></svg></button>
+      <button data-act="zoom-out" aria-label="Uzoqlashtirish"><svg class="i"><use href="#ic-minus"/></svg></button>
+      <button data-act="locate" aria-label="Mening joylashuvim"><svg class="i"><use href="#ic-locate"/></svg></button>
+      <button data-act="country" aria-label="Butun O'zbekiston" title="Butun O'zbekiston"><svg class="i"><use href="#ic-map"/></svg></button>
+    </div>
+    <div class="regpick" id="regPick" hidden></div>
+    <div class="scope sw mapscope" id="mapScope" data-pos="0" role="group" aria-label="Ko'rinish hududi">
+      <i class="sthumb" aria-hidden="true"></i>
+      <button type="button" data-act="scope-local" aria-pressed="true"><svg class="i"><use href="#ic-pin"/></svg><span class="sl"><b>Viloyatni ko'rish</b></span></button>
+      <button type="button" data-act="scope-country" aria-pressed="false"><svg class="i"><use href="#ic-map"/></svg><span class="sl"><b>Davlatni ko'rish</b></span></button></div>
+    <div class="scalebar" id="scalebar"><span id="scaleTxt">1 km</span><i id="scaleBar" style="width:80px"></i></div>
+    <div class="osmattr" id="osmattr" hidden>© OpenStreetMap hissadorlari</div>
+    <div class="coordtip" id="coordtip">41.31110, 69.27970</div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="js/admin-flag.js"></script>
+<script src="js/data/osm.js?v=1.0.1"></script>
+<script src="js/data/i18n.js?v=1.0.1"></script>
+<script src="js/data/bounds.js?v=1.0.1"></script>
+<script src="js/app.js?v=1.0.38"></script>
+<script src="js/lightbox.js?v=1.0.38"></script>
+<script src="js/photos-loader.js?v=1.0.6"></script>
+<script src="js/pwa.js?v=1.0.38"></script>
+</body></html>
