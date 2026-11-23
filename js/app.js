@@ -1467,7 +1467,7 @@ function openService(id,opts={}){
     <div class="actions">
       ${mapLinks(s)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button>
       <a class="btn btn-accent" href="${telHref(s.phone)}">${ic("phone")} Qo'ng'iroq qilish</a>
-      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${cmpLabel(s.id)}</span></button><button class="btn" data-act="rt" data-id="${s.id}" aria-pressed="${ROUTE.includes(s.id)}">➕ <span class="rt">${ROUTE.includes(s.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${s.id}">⚑ Xato haqida</button>
+      <button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="fav" data-id="${s.id}" aria-pressed="${FAV.has(s.id)}"><span class="fh">${FAV.has(s.id)?"\u2665":"\u2661"}</span> <span class="ft">${FAV.has(s.id)?"Saralangan":"Saralash"}</span></button><button class="btn" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}">⇄ <span class="ct">${cmpLabel(s.id)}</span></button><button class="btn" data-act="rt" data-id="${s.id}" aria-pressed="${ROUTE.includes(s.id)}"><span class="ri">${ROUTE.includes(s.id)?"\u2714":"\u2795"}</span> <span class="rt">${ROUTE.includes(s.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${s.id}">⚑ Xato haqida</button>
       <button class="btn" data-act="to-review">${ic("star")} Sharh yozish</button>
     </div>
     ${dsec("phone","Aloqa",phoneRow(s.phone)+`<div><dt>${ic("pin")} Manzil</dt><dd>${esc(s.address)}, ${esc(locality(s))}</dd></div>`)}
@@ -1503,7 +1503,7 @@ function openPlace(id,opts={}){
       <div class="dtitle"><span class="eyebrow">${t.one}</span><h2>${esc(p.name)}</h2></div></div>
     <p class="desc">${esc(p.desc)}</p>
     ${galleryHtml(p.t,t.color,p.id)}
-    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="rt" data-id="${p.id}" aria-pressed="${ROUTE.includes(p.id)}">➕ <span class="rt">${ROUTE.includes(p.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${p.id}">⚑ Xato haqida</button></div>
+    <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="rt" data-id="${p.id}" aria-pressed="${ROUTE.includes(p.id)}"><span class="ri">${ROUTE.includes(p.id)?"\u2714":"\u2795"}</span> <span class="rt">${ROUTE.includes(p.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${p.id}">⚑ Xato haqida</button></div>
     ${dsec("building","Umumiy ma'lumot",`<div><dt>${ic("building")} Hudud</dt><dd>${esc(p.area||`${p.district} tumani, Toshkent`)}</dd></div><div><dt>${ic("clock")} Ish vaqti</dt><dd>${t.hours} <span class="muted small">(taxminiy)</span></dd></div>`)}
     ${dsec("route","Masofa va yo'l",`<div><dt>${ic("route")} Sizdan</dt><dd>${routeHtml(p)}</dd></div>`)}
     ${dsec("map","Joylashuv",coordRow(p))}
@@ -2505,7 +2505,7 @@ function rtLeg(a,b){
 function rtPlan(){ const out=[]; let prev=state.user; for(const id of ROUTE){ const t=itemOf(id); if(!t) continue; out.push({id,t,L:rtLeg(prev,t)}); prev=t; } return out; }
 function rtSave(){
   LS.set(K_RT,ROUTE); rtBar();
-  document.querySelectorAll('[data-act="rt"]').forEach(b=>{ const on=ROUTE.includes(b.dataset.id); b.setAttribute("aria-pressed",String(on)); const t=b.querySelector(".rt"); if(t) t.textContent=on?"Marshrutda":"Marshrutga"; });
+  document.querySelectorAll('[data-act="rt"]').forEach(b=>{ const on=ROUTE.includes(b.dataset.id); b.setAttribute("aria-pressed",String(on)); const t=b.querySelector(".rt"); if(t) t.textContent=on?"Marshrutda":"Marshrutga"; const ri=b.querySelector(".ri"); if(ri) ri.textContent=on?"\u2714":"\u2795"; });
   if(!ROUTE.length) RT_SHOW=false;
   try{ renderOverlays(); }catch(e){}
 }
