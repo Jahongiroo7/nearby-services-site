@@ -1174,13 +1174,34 @@ function geolocate(){
     if(!inUzb(w)) toast("Siz O'zbekiston tashqarisidasiz: masofalar baribir shu nuqtadan hisoblanadi");
     flyTo(w.x,w.y,Math.min(view.w,7000));
   };
+  const ipFind=async()=>{
+    const ask=async(url,pick)=>{
+      const ac=new AbortController(), t=setTimeout(()=>ac.abort(),6000);
+      try{ const r=await fetch(url,{signal:ac.signal,cache:"no-store"}); if(!r.ok) return null; return pick(await r.json()); }
+      catch(e){ return null; } finally{ clearTimeout(t); }
+    };
+    const ok=p=>p&&isFinite(p.lat)&&isFinite(p.lng)&&Math.abs(p.lat)<=90&&Math.abs(p.lng)<=180?p:null;
+    return ok(await ask("https://get.geojs.io/v1/ip/geo.json",j=>({lat:parseFloat(j.latitude),lng:parseFloat(j.longitude),city:j.city||""})))
+        || ok(await ask("https://ipwho.is/",j=>j&&j.success!==false?({lat:parseFloat(j.latitude),lng:parseFloat(j.longitude),city:j.city||""}):null));
+  };
   const fail=code=>{
     if(done) return; done=true; stop();
     const alt=" Yoki pastdagi \"Shaharni tanlang\" ro'yxatidan shahringizni tanlang.";
-    if(code===1) originHelp("Joylashuvga ruxsat berilmagan: brauzer sozlamalarida bu sayt uchun joylashuvni \"Ruxsat\" qiling va sahifani yangilang."+alt);
-    else if(code===2) originHelp("Qurilma joylashuvni topa olmadi (Wi-Fi yoqilganini va Joylashuv xizmatlari yoqilganini tekshiring)."+alt);
-    else originHelp("Joylashuvni aniqlash uzoq cho'zildi."+alt);
-    const sel=document.getElementById("citySel"); if(sel) sel.focus();
+    const msg=code===1
+      ? "Joylashuvga ruxsat berilmagan: brauzer sozlamalarida bu sayt uchun joylashuvni \"Ruxsat\" qiling va sahifani yangilang."+alt
+      : code===2
+        ? "Qurilma joylashuvni topa olmadi (Wi-Fi va Joylashuv xizmatlari yoqilganini tekshiring)."+alt
+        : "Joylashuvni aniqlash uzoq cho'zildi."+alt;
+    const manual=()=>{ originHelp(msg); const sel=document.getElementById("citySel"); if(sel) sel.focus(); };
+    if(code===1){ manual(); return; }
+    toast("Qurilma joylashuvi topilmadi, internet manzili bo'yicha taxminiy joy qidirilmoqda…");
+    ipFind().then(p=>{
+      if(!p){ manual(); return; }
+      const w=ll2w(p.lng,p.lat);
+      setUser(w.x,w.y,p.city?`Taxminiy joy: ${p.city}`:"Taxminiy joylashuv",5000);
+      flyTo(w.x,w.y,Math.min(view.w,14000));
+      toast("Joylashuv taxminiy (internet manzili bo'yicha). Aniqroq nuqta uchun shahar yoki koordinatani tanlang");
+    });
   };
   // 1) aniq usul, 2) oddiy usul (Wi-Fi), 3) kuzatuv (ba'zi Mac/Safari'da faqat shu ishlaydi)
   const tryWatch=()=>{
