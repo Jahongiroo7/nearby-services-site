@@ -66,3 +66,10 @@ Xarita ma'lumotlari: © OpenStreetMap hissadorlari.
 2. render.com → **New +** → **Blueprint** → repozitoriyani tanlang. `render.yaml` o'zi hamma narsani sozlaydi.
    Yoki **New +** → **Static Site**: Build Command bo'sh, Publish Directory `.`
 3. **Deploy** bosing. Sayt `https://nearby-services.onrender.com` ko'rinishidagi HTTPS manzilda chiqadi.
+
+## Yangilash tartibi (xatosiz joylash)
+1. Kodni o'zgartiring va `index.html`/`admin.html` dagi `?v=` raqamini hamda `sw.js` dagi `VER` ni oshiring.
+2. Brauzerda sinang: `ruby -run -e httpd . -p 8770`, keyin http://localhost:8770 (konsolda qizil xato bo'lmasin).
+3. `git push` qiling: Render o'zi qayta joylaydi.
+4. Render, Settings, Headers ichidagi `Content-Security-Policy` `render.yaml` dagi qiymatga teng bo'lsin (`connect-src` da `get.geojs.io` va `ipwho.is` bor).
+5. Xatolar foydalanuvchi brauzerida `localStorage` ning `ns_errlog` kalitida saqlanadi (`js/guard.js`).
