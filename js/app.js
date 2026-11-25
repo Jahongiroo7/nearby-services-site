@@ -1159,26 +1159,45 @@ function parseCoord(txt){
 function originHelp(msg){
   const f=$("#ocoord"); if(f){ f.hidden=false; $("#ocerr").textContent=msg; $("#ocin").focus(); }
 }
+let geoBusy=false;
 function geolocate(){
-  if(!navigator.geolocation){ originHelp("Bu brauzerda joylashuv aniqlanmaydi. Koordinatani qo'lda kiriting."); return; }
+  if(!navigator.geolocation){ originHelp("Bu brauzerda joylashuv aniqlanmaydi. Pastdagi \"Shaharni tanlang\" ro'yxatidan shahringizni tanlang yoki koordinatani kiriting."); return; }
+  if(geoBusy) return;
+  geoBusy=true;
   toast("Joylashuv aniqlanmoqda…");
+  let done=false, wid=null, tm=null;
+  const stop=()=>{ if(wid!=null){ try{navigator.geolocation.clearWatch(wid);}catch(e){} wid=null; } if(tm){ clearTimeout(tm); tm=null; } geoBusy=false; };
   const ok=pos=>{
+    if(done) return; done=true; stop();
     const c=pos.coords, w=ll2w(c.longitude,c.latitude);
     setUser(w.x,w.y,"Mening joylashuvim",c.accuracy);
     if(!inUzb(w)) toast("Siz O'zbekiston tashqarisidasiz: masofalar baribir shu nuqtadan hisoblanadi");
     flyTo(w.x,w.y,Math.min(view.w,7000));
   };
-  const fail=err=>{
-    const code=err&&err.code;
-    if(code===1) originHelp("Joylashuvga ruxsat berilmagan. Manzil satridagi qulf belgisini bosing, \"Joylashuv\" ni \"Ruxsat\" qiling va sahifani yangilang. Yoki koordinatani qo'lda kiriting.");
-    else if(code===2) originHelp("Qurilma joylashuvni topa olmadi. Qurilmada joylashuv xizmati (GPS/Location Services) yoqilganini tekshiring yoki koordinatani qo'lda kiriting.");
-    else originHelp("Joylashuvni aniqlash uzoq cho'zildi. Qayta urinib ko'ring yoki koordinatani qo'lda kiriting.");
+  const fail=code=>{
+    if(done) return; done=true; stop();
+    const alt=" Yoki pastdagi \"Shaharni tanlang\" ro'yxatidan shahringizni tanlang.";
+    if(code===1) originHelp("Joylashuvga ruxsat berilmagan: brauzer sozlamalarida bu sayt uchun joylashuvni \"Ruxsat\" qiling va sahifani yangilang."+alt);
+    else if(code===2) originHelp("Qurilma joylashuvni topa olmadi (Wi-Fi yoqilganini va Joylashuv xizmatlari yoqilganini tekshiring)."+alt);
+    else originHelp("Joylashuvni aniqlash uzoq cho'zildi."+alt);
+    const sel=document.getElementById("citySel"); if(sel) sel.focus();
   };
-  // avval aniq (GPS), bo'lmasa kompyuterlarda ishlaydigan oddiy usul (Wi-Fi/IP)
-  navigator.geolocation.getCurrentPosition(ok,err=>{
-    if(err&&err.code===1) return fail(err);
-    navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:false,timeout:20000,maximumAge:300000});
-  },{enableHighAccuracy:true,timeout:8000,maximumAge:60000});
+  // 1) aniq usul, 2) oddiy usul (Wi-Fi), 3) kuzatuv (ba'zi Mac/Safari'da faqat shu ishlaydi)
+  const tryWatch=()=>{
+    try{
+      wid=navigator.geolocation.watchPosition(ok,e=>{ if(e&&e.code===1) fail(1); },{enableHighAccuracy:false,timeout:20000,maximumAge:600000});
+    }catch(e){ fail(2); return; }
+    tm=setTimeout(()=>fail(3),20000);
+  };
+  navigator.geolocation.getCurrentPosition(ok,e1=>{
+    if(done) return;
+    if(e1&&e1.code===1) return fail(1);
+    navigator.geolocation.getCurrentPosition(ok,e2=>{
+      if(done) return;
+      if(e2&&e2.code===1) return fail(1);
+      tryWatch();
+    },{enableHighAccuracy:false,timeout:12000,maximumAge:600000});
+  },{enableHighAccuracy:true,timeout:6000,maximumAge:60000});
 }
 
 function selectedPoint(){
