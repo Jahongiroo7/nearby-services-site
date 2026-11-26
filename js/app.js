@@ -522,7 +522,7 @@ Object.entries(myReviews).forEach(([id,list])=>{ const s=byId(id); if(s) list.fo
 
 /* ---------- holat ---------- */
 const state={q:"",cat:"all",radius:0,minRating:0,openNow:false,sort:"dist",region:null,
-  layers:new Set(Object.keys(PTYPES)),sel:null,mark:null,user:{...USER0,label:"Toshkent markazi (namunaviy nuqta)",acc:0}};
+  layers:new Set(Object.keys(PTYPES)),sel:null,mark:null,user:{...USER0,label:"Joylashuv aniqlanmoqda…",acc:0,pending:true}};
 
 /* ---------- xarita ---------- */
 const svg=$("#map"), svgBase=$("#mapBase"), wrap=$("#mapwrap");
@@ -1129,6 +1129,7 @@ function renderOverlays(){
 function setUser(x,y,label,acc){
   const was=state.user?userRegion():null, follow=!!was&&state.region===was.id;
   state.user={x:Math.round(x),y:Math.round(y),label,acc:acc||0}; routeCache.clear();
+  LS.set("ns_loc",{x:state.user.x,y:state.user.y,label,acc:state.user.acc,t:Date.now()});
   if(follow){ const nr=userRegion(); state.region=nr.id; selectRegion(nr); }
   renderOrigin(); renderOverlays(); render();
   const ll=toLatLng(state.user.x,state.user.y);
@@ -1138,7 +1139,7 @@ function renderOrigin(){ renderOrigin0(); enhanceSelects(); }
 function renderOrigin0(){
   const u=state.user, ll=toLatLng(u.x,u.y), open=!$("#ocoord")||!$("#ocoord").hidden;
   $("#originBar").innerHTML=`<div class="origin"><div class="ot"><span class="eyebrow">Masofa shu nuqtadan hisoblanadi</span><b>${esc(u.label)}</b>
-    <span class="muted">${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}${u.acc>5?` · ±${Math.round(u.acc)} m`:""}</span></div>
+    ${u.pending?`<span class="muted">Ruxsat bering yoki shaharni tanlang</span>`:`<span class="muted">${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}${u.acc>5?` · ±${Math.round(u.acc)} m`:""}</span>`}</div>
     <div class="oa"><button class="btn sm" data-act="geolocate">${ic("locate")} Joylashuvimni aniqlash</button><button class="btn sm" data-act="coord-toggle">${ic("pin")} Koordinata kiritish</button>
       <select class="citysel csel" id="citySel" aria-label="Shaharni tanlang"><option value="">Shaharni tanlang</option>${CITIES.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select></div>
     <form class="ocoord" id="ocoord" hidden novalidate><input class="input" id="ocin" inputmode="decimal" autocomplete="off" placeholder="41.29950, 69.24010" aria-label="Koordinata (kenglik, uzunlik)"><button class="btn btn-accent sm" type="submit">Qo'yish</button><em class="err" id="ocerr"></em></form></div>`;
@@ -1159,8 +1160,15 @@ function parseCoord(txt){
 function originHelp(msg){
   const f=$("#ocoord"); if(f){ f.hidden=false; $("#ocerr").textContent=msg; $("#ocin").focus(); }
 }
+/* foydalanuvchi turgan hududni ko'rsatish: hudud tanlanadi, xizmatlar masofa bo'yicha saralanadi */
+function useUserArea(){
+  const r=userRegion(); state.region=r?r.id:null; state.sel=null; state.mark=null; selectRegion(r);
+  state.sort="dist"; const so=document.getElementById("sort"); if(so) so.value="dist";
+  render();
+}
+function unknownLoc(){ if(state.user&&state.user.pending){ state.user.label="Joylashuv aniqlanmadi: shaharni tanlang"; renderOrigin(); } }
 let geoBusy=false;
-function geolocate(){
+function geolocate(auto){
   if(!navigator.geolocation){ originHelp("Bu brauzerda joylashuv aniqlanmaydi. Pastdagi \"Shaharni tanlang\" ro'yxatidan shahringizni tanlang yoki koordinatani kiriting."); return; }
   if(geoBusy) return;
   geoBusy=true;
@@ -1170,7 +1178,7 @@ function geolocate(){
   const ok=pos=>{
     if(done) return; done=true; stop();
     const c=pos.coords, w=ll2w(c.longitude,c.latitude);
-    setUser(w.x,w.y,"Mening joylashuvim",c.accuracy);
+    setUser(w.x,w.y,"Mening joylashuvim",c.accuracy); useUserArea();
     if(!inUzb(w)) toast("Siz O'zbekiston tashqarisidasiz: masofalar baribir shu nuqtadan hisoblanadi");
     flyTo(w.x,w.y,Math.min(view.w,7000));
   };
@@ -1192,13 +1200,13 @@ function geolocate(){
       : code===2
         ? "Qurilma joylashuvni topa olmadi (Wi-Fi va Joylashuv xizmatlari yoqilganini tekshiring)."+alt
         : "Joylashuvni aniqlash uzoq cho'zildi."+alt;
-    const manual=()=>{ originHelp(msg); const sel=document.getElementById("citySel"); if(sel) sel.focus(); };
-    if(code===1){ manual(); return; }
+    const manual=()=>{ unknownLoc(); originHelp(msg); const sel=document.getElementById("citySel"); if(sel) sel.focus(); };
+    if(code===1){ if(auto){ unknownLoc(); toast("Joylashuvga ruxsat berilmagan: shaharni tanlang yoki \"Joylashuvimni aniqlash\" ni bosing"); return; } manual(); return; }
     toast("Qurilma joylashuvi topilmadi, internet manzili bo'yicha taxminiy joy qidirilmoqda…");
     ipFind().then(p=>{
       if(!p){ manual(); return; }
       const w=ll2w(p.lng,p.lat);
-      setUser(w.x,w.y,p.city?`Taxminiy joy: ${p.city}`:"Taxminiy joylashuv",5000);
+      setUser(w.x,w.y,p.city?`Taxminiy joy: ${p.city}`:"Taxminiy joylashuv",5000); useUserArea();
       flyTo(w.x,w.y,Math.min(view.w,14000));
       toast("Joylashuv taxminiy (internet manzili bo'yicha). Aniqroq nuqta uchun shahar yoki koordinatani tanlang");
     });
@@ -2682,6 +2690,10 @@ function quickPick(k){
   if(l.length) fitPoints([state.user,l[0].s],1.6);
   qBox.blur();
 }
+/* oxirgi aniqlangan joy (30 kun ichida) bilan ochiladi */
+{ const sv=LS.get("ns_loc",null);
+  if(sv&&isFinite(sv.x)&&isFinite(sv.y)&&Date.now()-(+sv.t||0)<30*864e5)
+    state.user={x:Math.round(sv.x),y:Math.round(sv.y),label:sv.label==="Mening joylashuvim"?"Oxirgi joylashuvingiz":String(sv.label||"Oxirgi joylashuvingiz"),acc:+sv.acc||0}; }
 applyTheme();
 drawBase(); drawCountry(); renderLayers(); renderOrigin();
 const r0=svg.getBoundingClientRect(); pxW=Math.max(1,r0.width); pxH=Math.max(1,r0.height); sizeReal(); readColors();
@@ -2695,6 +2707,12 @@ initI18n();
 routeFromHash();
 pRoute();
 if(window.NS_ADMIN_ONLY){ document.documentElement.classList.add("admin-only"); pOpen("admin",true); }
+/* sayt ochilishi bilan foydalanuvchining haqiqiy joyini aniqlash */
+if(!window.NS_ADMIN_ONLY) setTimeout(()=>{ try{
+  if(navigator.permissions&&navigator.permissions.query)
+    navigator.permissions.query({name:"geolocation"}).then(p=>{ if(p.state==="denied"){ if(state.user.pending){ unknownLoc(); } toast("Joylashuv ruxsati o'chirilgan: shaharni tanlang yoki brauzerda ruxsat bering"); } else geolocate(true); }).catch(()=>geolocate(true));
+  else geolocate(true);
+}catch(e){} },700);
 setTimeout(()=>idle(()=>{ try{
   startHw();   // shaharlararo yo'l grafi
   // foydalanuvchi turgan hududning ko'cha grafi (birinchi marshrut qotmasin)
