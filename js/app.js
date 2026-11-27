@@ -1126,6 +1126,7 @@ function renderOverlays(){
   $("#gMark").innerHTML=m?`<g data-sx="${m.x}" data-sy="${m.y}" style="pointer-events:none"><path class="markpin" d="M0,0 C-2,-7 -11,-11 -11,-20 A11,11 0 1 1 11,-20 C11,-11 2,-7 0,0Z"/><circle class="markpin-dot" cy="-20" r="4"/></g>`:"";
 }
 /* Hisoblash nuqtasi: barcha masofalar shu nuqtadan. GPS bo'lsa aniq joylashuv, bo'lmasa koordinata yoki xaritadan tanlash. */
+let userPickT=0;
 function setUser(x,y,label,acc){
   const was=state.user?userRegion():null, follow=!!was&&state.region===was.id;
   state.user={x:Math.round(x),y:Math.round(y),label,acc:acc||0}; routeCache.clear();
@@ -1147,7 +1148,7 @@ function renderOrigin0(){
 document.addEventListener("change",e=>{
   if(!e.target||e.target.id!=="citySel"||!e.target.value) return;
   const c=CITIES.concat(TOWNS).find(x=>x.id===e.target.value); if(!c) return;
-  setUser(c.x,c.y,`${c.name} markazi`,0); flyTo(c.x,c.y,Math.min(view.w,7000));
+  userPickT=Date.now(); setUser(c.x,c.y,`${c.name} markazi`,0); flyTo(c.x,c.y,Math.min(view.w,7000));
 });
 function parseCoord(txt){
   const n=(txt.replace(/[°NSEWnsew]/g," ").match(/-?\d+(?:[.,]\d+)?/g)||[]).map(v=>parseFloat(v.replace(",",".")));
@@ -1173,10 +1174,12 @@ function geolocate(auto){
   if(geoBusy) return;
   geoBusy=true;
   toast("Joylashuv aniqlanmoqda…");
-  let done=false, wid=null, tm=null;
+  let done=false, wid=null, tm=null; const t0=Date.now();
+  const picked=()=>userPickT>t0;
   const stop=()=>{ if(wid!=null){ try{navigator.geolocation.clearWatch(wid);}catch(e){} wid=null; } if(tm){ clearTimeout(tm); tm=null; } geoBusy=false; };
   const ok=pos=>{
     if(done) return; done=true; stop();
+    if(picked()) return;
     const c=pos.coords, w=ll2w(c.longitude,c.latitude);
     setUser(w.x,w.y,"Mening joylashuvim",c.accuracy); useUserArea();
     if(!inUzb(w)) toast("Siz O'zbekiston tashqarisidasiz: masofalar baribir shu nuqtadan hisoblanadi");
@@ -1202,8 +1205,11 @@ function geolocate(auto){
         : "Joylashuvni aniqlash uzoq cho'zildi."+alt;
     const manual=()=>{ unknownLoc(); originHelp(msg); const sel=document.getElementById("citySel"); if(sel) sel.focus(); };
     if(code===1){ if(auto){ unknownLoc(); toast("Joylashuvga ruxsat berilmagan: shaharni tanlang yoki \"Joylashuvimni aniqlash\" ni bosing"); return; } manual(); return; }
+    if(picked()) return;
+    if(auto&&!state.user.pending){ toast("Qurilma joylashuvi topilmadi: oxirgi tanlangan joy ishlatilmoqda"); return; }
     toast("Qurilma joylashuvi topilmadi, internet manzili bo'yicha taxminiy joy qidirilmoqda…");
     ipFind().then(p=>{
+      if(picked()) return;
       if(!p){ manual(); return; }
       const w=ll2w(p.lng,p.lat);
       setUser(w.x,w.y,p.city?`Taxminiy joy: ${p.city}`:"Taxminiy joylashuv",5000); useUserArea();
@@ -1707,7 +1713,7 @@ document.addEventListener("submit",e=>{
     const c=parseCoord($("#ocin").value);
     if(!c){ $("#ocerr").textContent="Koordinatani shunday yozing: 41.29950, 69.24010"; return; }
     if(c.bad){ $("#ocerr").textContent="Bu nuqta O'zbekiston hududidan tashqarida ko'rinadi. Tekshiring: kenglik 37–45, uzunlik 56–73."; return; }
-    const w=ll2w(c.lng,c.lat); setUser(w.x,w.y,"Kiritilgan koordinata"); flyTo(w.x,w.y,Math.min(view.w,7000)); return;
+    const w=ll2w(c.lng,c.lat); userPickT=Date.now(); setUser(w.x,w.y,"Kiritilgan koordinata"); flyTo(w.x,w.y,Math.min(view.w,7000)); return;
   }
   if(e.target.id!=="revForm")return;
   e.preventDefault();
@@ -1771,7 +1777,7 @@ document.addEventListener("click",e=>{
   else if(a==="copy") copyText(act.dataset.copy);
   else if(a==="route"){ const t=selectedPoint(); if(t) fitPoints([state.user,t],1.5); }
   else if(a==="to-review"){ const f=$("#revForm"); if(f){f.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>$("#rs5").focus({preventScroll:true}),350);} }
-  else if(a==="set-user"){ const m=state.mark; state.mark=null; showList(); setUser(m.x,m.y,"Xaritadan tanlangan nuqta"); }
+  else if(a==="set-user"){ const m=state.mark; state.mark=null; showList(); userPickT=Date.now(); setUser(m.x,m.y,"Xaritadan tanlangan nuqta"); }
   else if(a==="geolocate") geolocate();
   else if(a==="coord-toggle"){ const f=$("#ocoord"); f.hidden=!f.hidden; $("#ocerr").textContent=""; if(!f.hidden) $("#ocin").focus(); }
   else if(a==="clear-region") setRegion(null);
