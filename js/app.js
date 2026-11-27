@@ -1697,6 +1697,14 @@ function endPointer(e){
 svg.addEventListener("pointerup",endPointer);
 svg.addEventListener("pointercancel",endPointer);
 svg.addEventListener("wheel",e=>{e.preventDefault();cancelAnimationFrame(anim);zoomAtScreen(e.clientX,e.clientY,view.w*Math.pow(1.0018,e.deltaY*(e.deltaMode===1?33:1)));},{passive:false});
+/* Safari (Mac trackpad / iPhone) qisish: butun sahifa emas, faqat xarita yaqinlashadi va chegaradan o'tmaydi */
+{ const mw=document.getElementById("mapwrap")||svg; let gW=0;
+  mw.addEventListener("gesturestart",e=>{ e.preventDefault(); cancelAnimationFrame(anim); gW=view.w; },{passive:false});
+  mw.addEventListener("gesturechange",e=>{ e.preventDefault(); if(gW&&e.scale>0) zoomAtScreen(e.clientX,e.clientY,gW/e.scale); },{passive:false});
+  mw.addEventListener("gestureend",e=>{ e.preventDefault(); gW=0; },{passive:false});
+  mw.addEventListener("wheel",e=>{ if(e.target.closest&&e.target.closest("#map,#layers")) return; if(e.ctrlKey){ e.preventDefault(); cancelAnimationFrame(anim); zoomAtScreen(e.clientX,e.clientY,view.w*Math.pow(1.0018,e.deltaY)); } },{passive:false});
+}
+
 
 function handleMapClick(e,target){
   const p=toWorld(e.clientX,e.clientY);
@@ -1778,7 +1786,7 @@ document.addEventListener("click",e=>{
   const act=e.target.closest("[data-act]"); if(!act)return;
   const a=act.dataset.act;
   if(a==="back") showList();
-  else if(a==="zoom-in") flyTo(view.x+view.w/2,view.y+view.h/2,view.w/1.8,260);
+  else if(a==="zoom-in"){ if(view.w<=W_MIN+1){ toast("Eng yaqin ko'rinish"); } else flyTo(view.x+view.w/2,view.y+view.h/2,view.w/1.8,260); }
   else if(a==="zoom-out") flyTo(view.x+view.w/2,view.y+view.h/2,view.w*1.8,260);
   else if(a==="locate") flyTo(state.user.x,state.user.y,W_MIN,view.w>40000?900:500);
   else if(a==="country") fitPoints(UZB,1.08);
