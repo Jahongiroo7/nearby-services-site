@@ -1149,7 +1149,7 @@ function renderOrigin0(){
 document.addEventListener("change",e=>{
   if(!e.target||e.target.id!=="citySel"||!e.target.value) return;
   const c=CITIES.concat(TOWNS).find(x=>x.id===e.target.value); if(!c) return;
-  userPickT=Date.now(); setUser(c.x,c.y,`${c.name} markazi`,0); flyTo(c.x,c.y,Math.min(view.w,7000));
+  userPickT=Date.now(); setUser(c.x,c.y,`${c.name} markazi`,0); flyTo(c.x,c.y,W_MIN,700);
 });
 function parseCoord(txt){
   const n=(txt.replace(/[°NSEWnsew]/g," ").match(/-?\d+(?:[.,]\d+)?/g)||[]).map(v=>parseFloat(v.replace(",",".")));
@@ -1184,7 +1184,7 @@ function geolocate(auto){
     const c=pos.coords, w=ll2w(c.longitude,c.latitude);
     setUser(w.x,w.y,"Mening joylashuvim",c.accuracy); useUserArea();
     if(!inUzb(w)) toast("Siz O'zbekiston tashqarisidasiz: masofalar baribir shu nuqtadan hisoblanadi");
-    flyTo(w.x,w.y,Math.min(view.w,7000));
+    flyTo(w.x,w.y,W_MIN,700);
   };
   const ipFind=async()=>{
     const ask=async(url,pick)=>{
@@ -1731,7 +1731,7 @@ document.addEventListener("submit",e=>{
     const c=parseCoord($("#ocin").value);
     if(!c){ $("#ocerr").textContent="Koordinatani shunday yozing: 41.29950, 69.24010"; return; }
     if(c.bad){ $("#ocerr").textContent="Bu nuqta O'zbekiston hududidan tashqarida ko'rinadi. Tekshiring: kenglik 37–45, uzunlik 56–73."; return; }
-    const w=ll2w(c.lng,c.lat); userPickT=Date.now(); setUser(w.x,w.y,"Kiritilgan koordinata"); flyTo(w.x,w.y,Math.min(view.w,7000)); return;
+    const w=ll2w(c.lng,c.lat); userPickT=Date.now(); setUser(w.x,w.y,"Kiritilgan koordinata"); flyTo(w.x,w.y,W_MIN,700); return;
   }
   if(e.target.id!=="revForm")return;
   e.preventDefault();
@@ -1790,7 +1790,7 @@ document.addEventListener("click",e=>{
   else if(a==="zoom-out") flyTo(view.x+view.w/2,view.y+view.h/2,view.w*1.8,260);
   else if(a==="locate") flyTo(state.user.x,state.user.y,W_MIN,view.w>40000?900:500);
   else if(a==="country") fitPoints(UZB,1.08);
-  else if(a==="to-tashkent"){ showList(); flyTo(state.user.x,state.user.y,14000,800); }
+  else if(a==="to-tashkent"){ showList(); flyTo(state.user.x,state.user.y,W_MIN,800); }
   else if(a==="share") shareThis();
   else if(a==="fav") toggleFav(act.dataset.id);
   else if(a==="cmp") cmpToggle(act.dataset.id);
@@ -1836,7 +1836,7 @@ $("#sort").addEventListener("change",e=>{ state.sort=e.target.value; render(); }
 /* ---------- ishga tushirish ---------- */
 let initPending=false; // sahifa ochilganda xarita hali o'lchamsiz bo'lsa, boshlang'ich ko'rinish o'lcham kelganda qo'yiladi
 function measure(){ const r=svg.getBoundingClientRect(); const cx=view.x+view.w/2, cy=view.y+view.h/2, k=pxW?view.w/pxW:14; pxW=Math.max(1,r.width); pxH=Math.max(1,r.height); sizeReal();
-  if(initPending&&r.width>=50){ initPending=false; setCenter(state.user.x,state.user.y,clamp(pxW*5.5,3200,6500)); } else setCenter(cx,cy,k*pxW); applyView(); }
+  if(initPending&&r.width>=50){ initPending=false; setCenter(state.user.x,state.user.y,state.user.pending?clamp(pxW*5.5,3200,6500):W_MIN); } else setCenter(cx,cy,k*pxW); applyView(); }
 
 /* ---------- tillar: O'zbekcha (asl), English, Русский, Français, Deutsch ----------
    Sahifadagi har bir matn (va placeholder/title/aria-label) asl o'zbekcha ko'rinishida saqlanadi va lug'at bo'yicha almashtiriladi.
@@ -2728,7 +2728,7 @@ drawBase(); drawCountry(); renderLayers(); renderOrigin();
 const r0=svg.getBoundingClientRect(); pxW=Math.max(1,r0.width); pxH=Math.max(1,r0.height); sizeReal(); readColors();
 // boshlang'ich ko'rinish: Toshkent markazi, binolar ko'rinadigan masshtabda
 initPending=r0.width<50;
-setCenter(state.user.x,state.user.y,clamp(pxW*5.5,3200,6500));
+setCenter(state.user.x,state.user.y,state.user.pending?clamp(pxW*5.5,3200,6500):W_MIN);
 { const r0=userRegion(); state.region=r0.id; selectRegion(r0); }   // boshlanishda faqat foydalanuvchi turgan hudud
 render();
 if("ResizeObserver" in window) new ResizeObserver(measure).observe(svg); else addEventListener("resize",measure);
