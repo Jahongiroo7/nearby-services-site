@@ -1353,8 +1353,8 @@ function placeScore(p,d){ return d/1000+(5-placeRating(p).r)*2; }
 function placeCardHtml(p,d){
   const t=PTYPES[p.t];
   return `<li><button class="card" data-open="${p.id}"><span class="cicon sq" style="background:${t.color}">${ic(p.t)}</span>
-    <span class="cbody"><span class="cname">${esc(p.name)}</span><span class="cmeta">${t.one} · ${esc(p.district)} · <span class="rt" style="white-space:nowrap">★${fmtR(placeRating(p).r)} <span class="cnt">(${placeRating(p).n})</span></span></span></span>
-    <span class="dist">${fmtKm(d)}</span></button></li>`;
+    <span class="cbody"><span class="cname">${esc(p.name)}</span><span class="cmeta">${t.one} · ${esc(p.district)}</span></span>
+    <span class="dist pdist">${fmtKm(d)}<span class="rt">★${fmtR(placeRating(p).r)} <span class="cnt">(${placeRating(p).n})</span></span></span></button></li>`;
 }
 function renderCats(){
   const base=filtered(true), cnt={all:base.length};
