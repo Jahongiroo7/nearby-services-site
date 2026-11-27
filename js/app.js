@@ -1454,7 +1454,7 @@ function render(){
   wrap.classList.toggle("has-region",!!state.region);
   wrap.classList.toggle("local-scope",!!state.region);
   renderLayers();
-  if(q||state.region){
+  if((q||state.region)&&state.cat==="all"){
     const all=places.filter(p=>state.layers.has(p.t)&&inRegion(p)&&(!q||norm(`${p.name} ${PTYPES[p.t].one} ${p.district} ${p.area||""} ${lang!=="uz"?trText(p.name)+" "+trText(PTYPES[p.t].one)+" "+trText(p.district):""}`).includes(q)))
       .map(p=>({p,d:gdist(p,state.user)})).sort((a,b)=>a.d-b.d);
     const lim=state.allPlaces?all.length:24, shown=all.slice(0,lim);
@@ -1577,7 +1577,7 @@ function farHtml(p,eyebrow,title,sub){
     ${dsec("map","Joylashuv",coordRow(p))}
     ${dsec("route","Masofa va yo'l",`<div><dt>${ic("route")} Sizdan</dt><dd>${fmtKm(d)} · mashinada ${drive} (taxminan)</dd></div>`)}
     <p class="desc">Bu nuqta O'zbekiston hududidan tashqarida. Xizmatlar faqat O'zbekiston bo'yicha ko'rsatiladi.</p>
-    <div class="actions"><button class="btn btn-primary" data-act="to-tashkent">${ic("locate")} Toshkentga qaytish</button></div>`;
+    <div class="actions"><button class="btn btn-primary" data-act="to-tashkent">${ic("locate")} Joylashuvimga qaytish</button></div>`;
 }
 function openCity(id){
   const c=CITIES.concat(TOWNS).find(x=>x.id===id); if(!c)return;

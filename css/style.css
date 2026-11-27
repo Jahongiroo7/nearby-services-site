@@ -1008,3 +1008,9 @@ html.admin-only .pn-box{width:min(1100px,100%);margin:0 auto;border-radius:0;bor
 @media (hover:none) and (pointer:coarse){
   input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px !important}
 }
+
+/* Taqqoslash + Marshrut panellari birga chiqqanda xaritadagi "Viloyat/Davlat" tugmasi ularning ostida qolmasin */
+@media (min-width:641px){html.has-rt:has(#cmpBar) .scope.sw.mapscope{bottom:112px}}
+/* Pastki panellar ro'yxat oxirini yopmasin */
+html:has(#cmpBar) .panel,html.has-rt .panel{padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))}
+html.has-rt:has(#cmpBar) .panel{padding-bottom:calc(240px + env(safe-area-inset-bottom,0px))}
