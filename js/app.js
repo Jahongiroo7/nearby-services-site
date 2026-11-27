@@ -1766,7 +1766,7 @@ document.addEventListener("click",e=>{
   if(a==="back") showList();
   else if(a==="zoom-in") flyTo(view.x+view.w/2,view.y+view.h/2,view.w/1.8,260);
   else if(a==="zoom-out") flyTo(view.x+view.w/2,view.y+view.h/2,view.w*1.8,260);
-  else if(a==="locate") flyTo(state.user.x,state.user.y,Math.min(view.w,7000),view.w>40000?800:420);
+  else if(a==="locate") flyTo(state.user.x,state.user.y,W_MIN,view.w>40000?900:500);
   else if(a==="country") fitPoints(UZB,1.08);
   else if(a==="to-tashkent"){ showList(); flyTo(state.user.x,state.user.y,14000,800); }
   else if(a==="share") shareThis();
