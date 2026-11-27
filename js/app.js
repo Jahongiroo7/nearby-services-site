@@ -1742,7 +1742,12 @@ document.addEventListener("submit",e=>{
 
 /* ---------- umumiy tugmalar ---------- */
 let toastT=0;
-function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
+function toast(msg){const t=$("#toast");t.textContent=msg;
+  // Kompyuterda xabar xarita o'rtasida chiqadi (ro'yxat ustiga tushmaydi)
+  try{ const mw=document.getElementById("mapwrap"), r=mw&&mw.getBoundingClientRect();
+    if(r&&innerWidth>860&&r.width>200){ t.classList.add("tmid"); t.style.left=Math.round(r.left+r.width/2)+"px"; t.style.top=Math.round(r.top+r.height/2)+"px"; t.style.maxWidth=Math.round(r.width-48)+"px"; }
+    else { t.classList.remove("tmid"); t.style.left=t.style.top=t.style.maxWidth=""; } }catch(_){}
+  t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
 function copyText(txt){
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(txt).then(()=>toast(`Nusxalandi: ${txt}`)).catch(()=>toast("Nusxalab bo'lmadi — matnni belgilab, Ctrl+C bosing"));

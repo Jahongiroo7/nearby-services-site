@@ -1020,3 +1020,5 @@ html.has-rt:has(#cmpBar) .panel{padding-bottom:calc(240px + env(safe-area-inset-
 .chip[aria-pressed="true"] .cico{color:#fff !important}
 .sg-qb .cico{flex:none;display:inline-grid;place-items:center;width:18px;height:18px}
 .search .sg-qb .cico svg.i{position:static;transform:none;color:inherit;width:18px;height:18px}
+/* Kompyuterda xabar (toast) xarita o'rtasida */
+.toast.tmid{bottom:auto;transform:translate(-50%,-50%);text-align:center}
