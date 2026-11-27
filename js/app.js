@@ -2453,7 +2453,7 @@ function sgMark(){ sg.querySelectorAll(".sg-i").forEach((el,i)=>{ const on=i===s
 function sgShow(){
   const nq=norm(qBox.value), items=[]; let html="";
   if(!nq){
-    html='<div class="sg-h"><span>Tez tanlov: hozir ochiq, eng yaqin</span></div><div class="sg-q">'+CAT_KEYS.map(k=>`<button type="button" class="sg-qb" data-q="${k}"><i style="background:${CATS[k].color}"></i>${esc(CATS[k].label)}</button>`).join("")+'</div>';
+    html='<div class="sg-h"><span>Tez tanlov: hozir ochiq, eng yaqin</span></div><div class="sg-q">'+CAT_KEYS.map(k=>`<button type="button" class="sg-qb" data-q="${k}"><span class="cico" style="color:${CATS[k].color}">${ic(k)}</span>${esc(CATS[k].label)}</button>`).join("")+'</div>';
     if(RQ.length){ RQ.forEach(t=>items.push({k:"recent",t})); html+='<div class="sg-h"><span>Oxirgi qidiruvlar</span><button type="button" data-sg-clear="1">Tozalash</button></div>'; }
   } else {
     CAT_KEYS.forEach(k=>{ if(norm(CATS[k].label).includes(nq)) items.push({k:"cat",cat:k,t:CATS[k].label}); });

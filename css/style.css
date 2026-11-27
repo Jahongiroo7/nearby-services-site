@@ -1018,3 +1018,5 @@ html.has-rt:has(#cmpBar) .panel{padding-bottom:calc(240px + env(safe-area-inset-
 .chip .cico{flex:none;display:inline-grid;place-items:center;width:18px;height:18px;font-size:15px;line-height:1}
 .chip .cico svg.i{width:18px;height:18px}
 .chip[aria-pressed="true"] .cico{color:#fff !important}
+.sg-qb .cico{flex:none;display:inline-grid;place-items:center;width:18px;height:18px}
+.search .sg-qb .cico svg.i{position:static;transform:none;color:inherit;width:18px;height:18px}
