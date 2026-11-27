@@ -1012,6 +1012,18 @@ function populate(c){
 }
 CITIES.forEach(c=>{ if(!c.capital) populate(c); });
 TOWNS.forEach(populate);
+/* Xizmatlar faqat shahar markazida emas, butun viloyat bo'ylab: har viloyatning shahar va tumanlari atrofida 25 km gacha */
+REGIONS.forEach(r=>{
+  const hubs=CITIES.concat(TOWNS).filter(c=>!c.capital&&regionOfCity(c)===r); if(!hubs.length) return;
+  const n=Math.min(90,28+hubs.length*8); let made=0, tries=0;
+  while(made<n&&tries<n*12){ tries++;
+    const h=hubs[Math.floor(rnd()*hubs.length)], ang=rnd()*Math.PI*2, rad=3000+Math.sqrt(rnd())*22000;
+    const x=h.x+Math.cos(ang)*rad, y=h.y+Math.sin(ang)*rad;
+    if(regionAt({x,y})!==r) continue;
+    const s=makeService(CAT_KEYS[made%6],x,y,h.name); s.region=r.id;
+    services.push(s); (myReviews[s.id]||[]).forEach(rv=>applyReview(s,rv)); made++;
+  }
+});
 
 function drawCountry(){
   let h=NEIGHBORS.map(([n,lng,lat])=>{const p=ll2w(lng,lat);return `<g data-sx="${p.x}" data-sy="${p.y}"><text class="ctry" text-anchor="middle">${esc(n)}</text></g>`;}).join("");

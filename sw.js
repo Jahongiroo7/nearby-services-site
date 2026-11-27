@@ -1,8 +1,8 @@
 /* Nearby Services: internetsiz ishlash (service worker)
    - ilova fayllari birinchi ochilishda saqlanadi, keyin internetsiz ham ochiladi
    - index.html: avval tarmoq, bo'lmasa saqlangani; qolgan fayllar: avval saqlangani */
-const VER = "ns-v26";
-const SHELL = ["./", "index.html", "css/style.css?v=1.0.62", "favicon.svg", "manifest.webmanifest", "fonts/fonts.css"];
+const VER = "ns-v27";
+const SHELL = ["./", "index.html", "css/style.css?v=1.0.63", "favicon.svg", "manifest.webmanifest", "fonts/fonts.css"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VER).then(c => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting()));
