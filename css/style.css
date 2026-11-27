@@ -1003,3 +1003,8 @@ html.admin-only .pn-x{display:none}
 html.admin-only .pnl{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
 html.admin-only .pn-box{width:min(1100px,100%);margin:0 auto;border-radius:0;border:0;box-shadow:none}
 @media (min-width:900px){html.admin-only .pn-box{margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}}
+
+/* ===== iPhone: maydon bosilganda avtomatik kattalashmasin (16px) ===== */
+@media (hover:none) and (pointer:coarse){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px !important}
+}
