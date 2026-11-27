@@ -1351,8 +1351,8 @@ function renderCats(){
   const base=filtered(true), cnt={all:base.length};
   CAT_KEYS.forEach(k=>cnt[k]=base.filter(r=>r.s.cat===k).length);
   $("#cats").innerHTML=[["all","Barchasi",null],...CAT_KEYS.map(k=>[k,CATS[k].label,CATS[k].color])].map(([k,l,c])=>
-    `<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${c?`<span class="dot" style="background:${c}"></span>`:""}${l} <span class="n">${cnt[k]}</span></button>`).join("")+
-    `<button class="chip" data-fav="1" aria-pressed="${!!state.fav}"><span class="dot"></span>\u2665 Saralanganlar <span class="n">${base.filter(r=>FAV.has(r.s.id)).length}</span></button>`;
+    `<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${c?`<span class="cico" style="color:${c}">${ic(k)}</span>`:""}${l} <span class="n">${cnt[k]}</span></button>`).join("")+
+    `<button class="chip" data-fav="1" aria-pressed="${!!state.fav}"><span class="cico" style="color:#e11d48">\u2665</span>Saralanganlar <span class="n">${base.filter(r=>FAV.has(r.s.id)).length}</span></button>`;
 }
 function userRegion(){ return regionAt(state.user); }
 function syncScope(){
