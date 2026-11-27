@@ -1341,10 +1341,19 @@ function cardHtml(s,d){
     <span class="cline">${ratingHtml(s)}<span class="pill ${st.open?(st.soon?"soon":"open"):"closed"}">${st.text}</span></span></span>
     <span class="dist">${fmtKm(d)}</span></button><button type="button" class="cmp-add" data-act="cmp" data-id="${s.id}" aria-pressed="${CMP.includes(s.id)}" aria-label="Taqqoslashga qo'shish" title="Taqqoslashga qo'shish">⇄</button></li>`;
 }
+/* Jamoat joylari reytingi (namunaviy, har joy uchun doimiy) */
+const PR_CACHE={};
+function placeRating(p){
+  if(PR_CACHE[p.id]) return PR_CACHE[p.id];
+  let h=2166136261; for(const ch of String(p.id)+"|"+p.name){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } h>>>=0;
+  return PR_CACHE[p.id]={r:Math.round((3.7+(h%121)/100)*10)/10, n:15+(h>>>8)%420};
+}
+/* Yaqinlik + reyting: har 0,1 yulduz ~200 m ga teng */
+function placeScore(p,d){ return d/1000+(5-placeRating(p).r)*2; }
 function placeCardHtml(p,d){
   const t=PTYPES[p.t];
   return `<li><button class="card" data-open="${p.id}"><span class="cicon sq" style="background:${t.color}">${ic(p.t)}</span>
-    <span class="cbody"><span class="cname">${esc(p.name)}</span><span class="cmeta">${t.one} · ${esc(p.district)}</span></span>
+    <span class="cbody"><span class="cname">${esc(p.name)}</span><span class="cmeta">${t.one} · ${esc(p.district)} · <span class="rt" style="white-space:nowrap">★${fmtR(placeRating(p).r)} <span class="cnt">(${placeRating(p).n})</span></span></span></span>
     <span class="dist">${fmtKm(d)}</span></button></li>`;
 }
 function renderCats(){
@@ -1456,7 +1465,7 @@ function render(){
   renderLayers();
   if((q||state.region)&&state.cat==="all"){
     const all=places.filter(p=>state.layers.has(p.t)&&inRegion(p)&&(!q||norm(`${p.name} ${PTYPES[p.t].one} ${p.district} ${p.area||""} ${lang!=="uz"?trText(p.name)+" "+trText(PTYPES[p.t].one)+" "+trText(p.district):""}`).includes(q)))
-      .map(p=>({p,d:gdist(p,state.user)})).sort((a,b)=>a.d-b.d);
+      .map(p=>({p,d:gdist(p,state.user)})).sort(state.sort==="rating"?(a,b)=>placeRating(b.p).r-placeRating(a.p).r||a.d-b.d:state.sort==="reviews"?(a,b)=>placeRating(b.p).n-placeRating(a.p).n||a.d-b.d:(a,b)=>placeScore(a.p,a.d)-placeScore(b.p,b.d));
     const lim=state.allPlaces?all.length:24, shown=all.slice(0,lim);
     $("#placeHits").innerHTML=all.length?`<div class="sec"><div class="subhead"><span>Jamoat joylari</span><span class="muted">${all.length} ta</span></div>
       <ul class="results">${shown.map(r=>placeCardHtml(r.p,r.d)).join("")}</ul>
@@ -1555,7 +1564,7 @@ function openPlace(id,opts={}){
   showDetail(`
     <button class="back" data-act="back">${ic("back")} Ro'yxatga qaytish</button>
     <div class="dhead"><span class="dicon sq" style="background:${t.color}">${ic(p.t)}</span>
-      <div class="dtitle"><span class="eyebrow">${t.one}</span><h2>${esc(p.name)}</h2></div></div>
+      <div class="dtitle"><span class="eyebrow">${t.one}</span><h2>${esc(p.name)}</h2><span class="muted"><span class="rt">★ ${fmtR(placeRating(p).r)}</span> · ${placeRating(p).n} ta baho</span></div></div>
     <p class="desc">${esc(p.desc)}</p>
     ${galleryHtml(p.t,t.color,p.id)}
     <div class="actions">${mapLinks(p)}<button class="btn btn-primary" data-act="route">${ic("route")} Yo'nalish</button><button class="btn" data-act="share">${ic("copy")} Ulashish</button><button class="btn" data-act="rt" data-id="${p.id}" aria-pressed="${ROUTE.includes(p.id)}"><span class="ri">${ROUTE.includes(p.id)?"\u2714":"\u2795"}</span> <span class="rt">${ROUTE.includes(p.id)?"Marshrutda":"Marshrutga"}</span></button><button class="btn" data-act="report" data-id="${p.id}">⚑ Xato haqida</button></div>
