@@ -11,9 +11,10 @@ const LS = {
 };
 /* Tizim sozlamalari (admin panelida o'zgartiriladi); standart qiymatlar */
 const SYS_KEY="ns_sys";
-const SYS_DEF={name:"Nearby",sub:"Services · Toshkent",lang:"uz",theme:"auto",sort:"dist",radius:0,openNow:false,
+const SYS_DEF={name:"Nearby",sub:"Services · O'zbekiston",lang:"uz",theme:"auto",sort:"dist",radius:0,openNow:false,
   fReviews:true,fFav:true,fShare:true,fGallery:true,fPhone:true,fKabinet:true,fCompare:true,fRoute:true,fReport:true,annOn:false,annText:"",annKind:"info",maint:false,maintText:"Saytda texnik ishlar olib borilmoqda. Tez orada qaytamiz."};
 let SYS=Object.assign({},SYS_DEF,LS.get(SYS_KEY,{}));
+if(SYS.sub==="Services · Toshkent") SYS.sub=SYS_DEF.sub;
 /* Akkauntlar (demo): har birining o'z saralanganlari va kelgan ulashishlari bor */
 const ACC_KEY="ns_acc", ACCS_KEY="ns_accounts", K_SH="ns_shares";
 const ACC_DEF=[{id:"guest",name:"Mehmon"},{id:"aziz",name:"Aziz"},{id:"malika",name:"Malika"},{id:"jasur",name:"Jasur"},{id:"dilnoza",name:"Dilnoza"},{id:"sardor",name:"Sardor"}];
