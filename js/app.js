@@ -147,6 +147,24 @@ function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay;const t=clamp(((px-a
 const REAL=(()=>{try{return (window.NS_DATA&&window.NS_DATA.osm)||null;}catch(e){return null;}})();
 const decPts=a=>{const p=[[a[0],a[1]]];for(let i=2;i<a.length;i+=2){const l=p[p.length-1];p.push([l[0]+a[i],l[1]+a[i+1]]);}return p;};
 const REAL_AREAS=REAL?REAL.areas.filter(a=>a.r.length||(a.b&&a.b.length)):[];
+// viloyat bo'yicha to'liq ma'lumot ichidagi shahar hududi: chetlari so'ndirilmaydi va fon bilan yopilmaydi (ostidagi viloyat ko'chalari ko'rinib turadi)
+function regCov(){ REAL_AREAS.forEach(a=>{ if(a.reg) return; if(a.rid===undefined){ const r=regionAt({x:(a.bbox[0]+a.bbox[2])/2,y:(a.bbox[1]+a.bbox[3])/2}); a.rid=r?r.id:null; } a.cov=!!a.rid&&REAL_AREAS.some(o=>o.reg&&o.rid===a.rid); }); }
+/* Viloyatlar bo'yicha to'liq ko'chalar: har viloyat alohida faylda, faqat xarita o'sha viloyatga yaqinlashganda yuklanadi */
+const REG_IDX=(window.NS_DATA&&window.NS_DATA.regIdx)||{}, REG_VER="2", regState={};
+function addRegArea(id){
+  const d=window.NS_DATA&&window.NS_DATA.reg&&window.NS_DATA.reg[id]; if(!d||!REAL) return;
+  const off=REAL.names.length; for(const n of d.names) REAL.names.push(n);
+  const a={n:d.n,bbox:d.bbox,r:d.r.map(q=>[q[0],q[1]<0?-1:q[1]+off,q[2]]),wl:d.wl||[],reg:true,rid:id};
+  REAL.areas.unshift(a); REAL_AREAS.unshift(a); regCov(); delete window.NS_DATA.reg[id];
+  regState[id]=2; queueReal(true);
+}
+function ensureRegData(){
+  if(!REAL||!pxW||view.w/pxW>=90) return;
+  const vx0=view.x, vy0=view.y, vx1=view.x+view.w, vy1=view.y+view.h;
+  for(const id in REG_IDX){ const b=REG_IDX[id]; if(regState[id]||b[2]<vx0||b[0]>vx1||b[3]<vy0||b[1]>vy1) continue;
+    regState[id]=1; const sc=document.createElement("script"); sc.src=`js/data/reg/${id}.js?v=${REG_VER}`; sc.async=true;
+    sc.onload=()=>addRegArea(id); sc.onerror=()=>{ regState[id]=0; }; document.head.appendChild(sc); }
+}
 // kichik hudud (masalan, Toshkent markazi) katta hududdan (butun Toshkent) ustun turadi — ro'yxatda keyinroq
 function realAreaAt(x,y){for(let i=REAL_AREAS.length-1;i>=0;i--){const b=REAL_AREAS[i].bbox;if(x>=b[0]&&x<=b[2]&&y>=b[1]&&y<=b[3])return REAL_AREAS[i];}return null;}
 function areaNamed(a){ if(!a._named) a._named=a.r.filter(r=>r[1]>=0&&r[0]!=="foot").map(r=>({name:REAL.names[r[1]],cls:r[0],pts:decPts(r[2])})); return a._named; }
@@ -671,9 +689,9 @@ function drawReal(){
     const bb=a.bbox; if(bb[2]<vx0||bb[0]>vx1||bb[3]<vy0||bb[1]>vy1) continue;
     const P=areaPaths(a); any=true;
     // viloyat rejimi: ma'lumot tugaydigan chetdagi uzilgan yo'l uchlari chizilmaydi (chekinib qirqiladi)
-    const inset=LOC&&!a.b;   // viloyat rejimi: ma'lumot chegarasi to'rtburchak bo'lib ko'rinmasin, mayda yo'llar oval bo'ylab asta so'nadi
+    const inset=LOC&&!a.b&&!a.cov;   // viloyat rejimi: ma'lumot chegarasi to'rtburchak bo'lib ko'rinmasin, mayda yo'llar oval bo'ylab asta so'nadi
     if(inset){ ctx.save(); ctx.beginPath(); ctx.rect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); ctx.clip(); }   // chegaradan chiqib ketgan yo'l parchalari qirqiladi (so'nmay qolib, to'g'ri chiziq hosil qilmasin)
-    if(!a.b&&!LOC){ ctx.fillStyle=RC.land; ctx.fillRect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); } // ostidagi sxematik chizmani yopadi (ichma-ich markaziy hudud katta hududning ustida, o'z to'rtburchagini bo'yamaydi)
+    if(!a.b&&!LOC&&!a.cov){ ctx.fillStyle=RC.land; ctx.fillRect(bb[0],bb[1],bb[2]-bb[0],bb[3]-bb[1]); } // ostidagi sxematik chizmani yopadi (ichma-ich markaziy hudud katta hududning ustida, o'z to'rtburchagini bo'yamaydi)
     if(P.detail){ ctx.fillStyle=RC.park; ctx.fill(P.g); ctx.fillStyle=RC.pitch; ctx.fill(P.p); ctx.fillStyle=RC.water; ctx.fill(P.w); }
     ctx.strokeStyle=RC.water; ctx.lineWidth=Math.max(10,2.5*k); ctx.stroke(P.wl);
     if(P.detail&&k<11){ if(P.needGen&&!P.gen){ if(!fresh||performance.now()<dl){ P.gen=makeBuildingGen(a)||(()=>[]); fresh=true; } else pend=true; }
@@ -685,7 +703,7 @@ function drawReal(){
     for(const r of st){ if(r[0]==="foot"||r[0]==="rail") continue; ctx.strokeStyle=RC.edge; ctx.lineWidth=wd(r)+1.6*k; ctx.stroke(P.r[r[0]]); }
     for(const r of st){ ctx.strokeStyle=RC[r[3]]; ctx.lineWidth=wd(r); if(r[0]==="rail") ctx.setLineDash([7*k,6*k]); ctx.stroke(P.r[r[0]]); ctx.setLineDash([]); }
     // chegara qirrasi: ma'lumot tugaydigan joyda keskin chiziq bo'lmasligi uchun fon rangiga asta so'nadi
-    if(!a.b&&!LOC){ const F=Math.min(Math.max(70*k,400),2500), N=10, W=bb[2]-bb[0], H=bb[3]-bb[1]; ctx.fillStyle=RC.land;
+    if(!a.b&&!LOC&&!a.cov){ const F=Math.min(Math.max(70*k,400),2500), N=10, W=bb[2]-bb[0], H=bb[3]-bb[1]; ctx.fillStyle=RC.land;
       for(let i=0;i<N;i++){ const d=F/N, a=1-i/N; ctx.globalAlpha=a*a;
         if(bb[0]+i*d<vx1&&bb[0]+(i+1)*d>vx0){ ctx.fillRect(bb[0]+i*d,bb[1],d+1,H); }
         if(bb[2]-(i+1)*d<vx1&&bb[2]-i*d>vx0){ ctx.fillRect(bb[2]-(i+1)*d-1,bb[1],d+1,H); }
@@ -771,6 +789,7 @@ function clampView(){
 }
 function toWorld(cx,cy){const r=svg.getBoundingClientRect();return {x:view.x+(cx-r.left)/pxW*view.w,y:view.y+(cy-r.top)/pxH*view.h};}
 function applyView(){
+  try{ ensureRegData(); }catch(_){}
   svg.setAttribute("viewBox",`${view.x} ${view.y} ${view.w} ${view.h}`); svgBase.setAttribute("viewBox",`${view.x} ${view.y} ${view.w} ${view.h}`);
   const k=kpx();
   const zl = k<6 ? "near" : k<13 ? "mid" : k<40 ? "far" : k<150 ? "region" : "country";
@@ -1140,6 +1159,7 @@ function renderOverlays(){
 }
 /* Hisoblash nuqtasi: barcha masofalar shu nuqtadan. GPS bo'lsa aniq joylashuv, bo'lmasa koordinata yoki xaritadan tanlash. */
 let userPickT=0;
+function followUserRegion(){ const nr=userRegion(); if(state.region&&nr&&state.region!==nr.id){ state.region=nr.id; selectRegion(nr); render(); } }
 function setUser(x,y,label,acc){
   const was=state.user?userRegion():null, follow=!!was&&state.region===was.id;
   state.user={x:Math.round(x),y:Math.round(y),label,acc:acc||0}; routeCache.clear();
@@ -1161,7 +1181,7 @@ function renderOrigin0(){
 document.addEventListener("change",e=>{
   if(!e.target||e.target.id!=="citySel"||!e.target.value) return;
   const c=CITIES.concat(TOWNS).find(x=>x.id===e.target.value); if(!c) return;
-  userPickT=Date.now(); setUser(c.x,c.y,`${c.name} markazi`,0); flyTo(c.x,c.y,W_MIN,700);
+  userPickT=Date.now(); setUser(c.x,c.y,`${c.name} markazi`,0); followUserRegion(); flyTo(c.x,c.y,W_MIN,700);
 });
 function parseCoord(txt){
   const n=(txt.replace(/[°NSEWnsew]/g," ").match(/-?\d+(?:[.,]\d+)?/g)||[]).map(v=>parseFloat(v.replace(",",".")));
@@ -1743,7 +1763,7 @@ document.addEventListener("submit",e=>{
     const c=parseCoord($("#ocin").value);
     if(!c){ $("#ocerr").textContent="Koordinatani shunday yozing: 41.29950, 69.24010"; return; }
     if(c.bad){ $("#ocerr").textContent="Bu nuqta O'zbekiston hududidan tashqarida ko'rinadi. Tekshiring: kenglik 37–45, uzunlik 56–73."; return; }
-    const w=ll2w(c.lng,c.lat); userPickT=Date.now(); setUser(w.x,w.y,"Kiritilgan koordinata"); flyTo(w.x,w.y,W_MIN,700); return;
+    const w=ll2w(c.lng,c.lat); userPickT=Date.now(); setUser(w.x,w.y,"Kiritilgan koordinata"); followUserRegion(); flyTo(w.x,w.y,W_MIN,700); return;
   }
   if(e.target.id!=="revForm")return;
   e.preventDefault();
